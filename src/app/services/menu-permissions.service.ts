@@ -14,40 +14,40 @@ export class MenuPermissionsService {
   // Definição das permissões por rota
   private menuPermissions: MenuPermission[] = [
     // Dashboard - todos podem acessar
-    { route: '/dashboard', roles: ['ADMIN', 'VET', 'COLLABORATOR'] },
+    { route: '/dashboard', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET', 'STAFF', 'CLIENT'] },
     
     // Vendas & Atendimento
-    { route: '/pos', roles: ['ADMIN', 'COLLABORATOR'] },
-    { route: '/orders', roles: ['ADMIN', 'COLLABORATOR'] },
-    { route: '/crm/customers', roles: ['ADMIN', 'VET', 'COLLABORATOR'] },
-    { route: '/crm/pets', roles: ['ADMIN', 'VET', 'COLLABORATOR'] },
-    { route: '/schedule', roles: ['ADMIN', 'VET', 'COLLABORATOR'] },
-    { route: '/checkin', roles: ['ADMIN', 'COLLABORATOR'] },
+    { route: '/pos', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
+    { route: '/orders', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
+    { route: '/crm/customers', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET', 'STAFF'] },
+    { route: '/crm/pets', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET', 'STAFF'] },
+    { route: '/schedule', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET', 'STAFF'] },
+    { route: '/checkin', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
     
     // Serviços
-    { route: '/grooming', roles: ['ADMIN', 'COLLABORATOR'] },
-    { route: '/vet', roles: ['ADMIN', 'VET'] },
-    { route: '/inpatient', roles: ['ADMIN', 'VET'] },
-    { route: '/hotel', roles: ['ADMIN', 'COLLABORATOR'] },
+    { route: '/grooming', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
+    { route: '/vet', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
+    { route: '/inpatient', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
+    { route: '/hotel', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
     
     // Produtos & Estoque
-    { route: '/catalog', roles: ['ADMIN', 'COLLABORATOR'] },
-    { route: '/inventory', roles: ['ADMIN', 'COLLABORATOR'] },
-    { route: '/purchasing', roles: ['ADMIN'] },
+    { route: '/catalog', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
+    { route: '/inventory', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
+    { route: '/purchasing', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN'] },
     
     // Financeiro
-    { route: '/finance/cash', roles: ['ADMIN'] },
-    { route: '/finance/receivables', roles: ['ADMIN'] },
-    { route: '/finance/payables', roles: ['ADMIN'] },
+    { route: '/finance/cash', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN'] },
+    { route: '/finance/receivables', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN'] },
+    { route: '/finance/payables', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN'] },
     
     // Relatórios
-    { route: '/reports', roles: ['ADMIN', 'VET'] },
+    { route: '/reports', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
     
-                // Configurações
-            { route: '/settings/org', roles: ['ADMIN'] },
-            { route: '/settings/users', roles: ['ADMIN'] },
-            { route: '/settings/schedule', roles: ['ADMIN'] },
-            { route: '/settings/permissions', roles: ['ADMIN'] }
+    // Configurações
+    { route: '/settings/org', roles: ['SUPER_ADMIN'] },
+    { route: '/settings/users', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN'] },
+    { route: '/settings/schedule', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN'] },
+    { route: '/settings/permissions', roles: ['SUPER_ADMIN'] }
   ];
 
   constructor(private authService: AuthService) {}
@@ -57,7 +57,14 @@ export class MenuPermissionsService {
    */
   canAccess(route: string): boolean {
     const currentUser = this.authService.getCurrentUser();
-    if (!currentUser || !currentUser.role) {
+    if (!currentUser) {
+      return false;
+    }
+
+    // Buscar role do token JWT
+    const userRole = this.getUserRoleFromToken();
+    console.info('userRole', userRole);
+    if (!userRole) {
       return false;
     }
 
@@ -66,7 +73,7 @@ export class MenuPermissionsService {
       return false;
     }
 
-    return permission.roles.includes(currentUser.role);
+    return permission.roles.includes(userRole);
   }
 
   /**
@@ -74,12 +81,17 @@ export class MenuPermissionsService {
    */
   getAccessibleRoutes(): string[] {
     const currentUser = this.authService.getCurrentUser();
-    if (!currentUser || !currentUser.role) {
+    if (!currentUser) {
       return ['/dashboard'];
     }
 
+    const userRole = this.getUserRoleFromToken();
+    if (!userRole) {
+      return ['/dashboard'];
+    }
+    
     return this.menuPermissions
-      .filter(p => currentUser.role && p.roles.includes(currentUser.role))
+      .filter(p => p.roles.includes(userRole))
       .map(p => p.route);
   }
 
@@ -112,16 +124,23 @@ export class MenuPermissionsService {
    * Retorna o papel do usuário atual
    */
   getCurrentUserRole(): string | null {
-    const currentUser = this.authService.getCurrentUser();
-    return currentUser?.role || null;
+    return this.getUserRoleFromToken();
   }
 
   /**
-   * Verifica se o usuário é administrador
+   * Verifica se o usuário é super administrador
    */
-  isAdmin(): boolean {
+  isSuperAdmin(): boolean {
     const role = this.getCurrentUserRole();
-    return role === 'ADMIN' || role === 'SUPER_ADMIN';
+    return role === 'SUPER_ADMIN';
+  }
+
+  /**
+   * Verifica se o usuário é administrador da clínica
+   */
+  isClinicAdmin(): boolean {
+    const role = this.getCurrentUserRole();
+    return role === 'CLINIC_ADMIN';
   }
 
   /**
@@ -133,10 +152,52 @@ export class MenuPermissionsService {
   }
 
   /**
-   * Verifica se o usuário é colaborador
+   * Verifica se o usuário é staff
    */
-  isCollaborator(): boolean {
+  isStaff(): boolean {
     const role = this.getCurrentUserRole();
-    return role === 'COLLABORATOR';
+    return role === 'STAFF';
+  }
+
+  /**
+   * Verifica se o usuário é cliente
+   */
+  isClient(): boolean {
+    const role = this.getCurrentUserRole();
+    return role === 'CLIENT';
+  }
+
+  /**
+   * Verifica se o usuário é administrador (super ou clínica)
+   */
+  isAdmin(): boolean {
+    const role = this.getCurrentUserRole();
+    return role === 'SUPER_ADMIN' || role === 'CLINIC_ADMIN';
+  }
+
+  /**
+   * Decodifica o token JWT e extrai a role do usuário
+   */
+  private getUserRoleFromToken(): string | null {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      return null;
+    }
+
+    try {
+      // Decodificar o token JWT (payload)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const roles = payload['https://petshop.com/roles'];
+      
+      // Retorna a primeira role se existir, ou null se a lista estiver vazia
+      if (Array.isArray(roles) && roles.length > 0) {
+        return roles[0];
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Erro ao decodificar token:', error);
+      return null;
+    }
   }
 }

@@ -4,12 +4,11 @@ import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { SidebarComponent } from './sidebar.component';
 import { HeaderComponent } from './header.component';
-import { BreadcrumbComponent } from './breadcrumb.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, SidebarComponent, HeaderComponent, BreadcrumbComponent],
+  imports: [CommonModule, RouterOutlet, SidebarComponent, HeaderComponent],
   template: `
     <div class="min-h-screen bg-gray-50 flex">
       <!-- Sidebar -->
@@ -28,8 +27,6 @@ import { BreadcrumbComponent } from './breadcrumb.component';
         <main class="flex-1 overflow-auto">
           <div class="py-6">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <!-- Breadcrumb -->
-              <app-breadcrumb></app-breadcrumb>
               
               <!-- Page Content -->
               <div class="mt-6">

@@ -3,6 +3,8 @@ import { LoginComponent } from './components/login/login.component';
 import { ClinicSelectComponent } from './components/clinic-select/clinic-select.component';
 import { MainLayoutComponent } from './components/layout/main-layout.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { CustomersComponent } from './components/customers/customers.component';
+import { CustomerFormComponent } from './components/customers/customer-form/customer-form.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ClinicGuard } from './guards/clinic.guard';
 
@@ -25,7 +27,9 @@ export const routes: Routes = [
       // Vendas & Atendimento
       { path: 'pos', component: DashboardComponent }, // PDV
       { path: 'orders', component: DashboardComponent }, // Pedidos
-      { path: 'crm/customers', component: DashboardComponent }, // Clientes
+      { path: 'crm/customers', component: CustomersComponent }, // Clientes
+      { path: 'crm/customers/new', component: CustomerFormComponent }, // Novo Cliente
+      { path: 'crm/customers/edit/:id', component: CustomerFormComponent }, // Editar Cliente
       { path: 'crm/pets', component: DashboardComponent }, // Pets
       { path: 'schedule', component: DashboardComponent }, // Agendamentos
       { path: 'checkin', component: DashboardComponent }, // Check-in/out
