@@ -14,6 +14,9 @@ export interface Tutor {
   state?: string;
   zipCode?: string;
   birthDate?: string;
+  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'BLACKLISTED';
+  deactivationReason?: string;
+  deactivatedAt?: string;
   createdAt: string;
   updatedAt: string;
   tutor?: {
@@ -107,4 +110,25 @@ export class TutorService {
   deactivateTutor(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
   }
+
+  // Marcar tutor como inativo
+  deactivateTutorStatus(id: string, reason?: string): Observable<{ message: string; data: Tutor }> {
+    return this.http.patch<{ message: string; data: Tutor }>(`${this.apiUrl}/${id}`, { reason });
+  }
+
+  // Suspender tutor
+  suspendTutor(id: string, reason?: string): Observable<{ message: string; data: Tutor }> {
+    return this.http.patch<{ message: string; data: Tutor }>(`${this.apiUrl}/${id}/suspend`, { reason });
+  }
+
+  // Adicionar tutor à lista negra
+  blacklistTutor(id: string, reason: string): Observable<{ message: string; data: Tutor }> {
+    return this.http.patch<{ message: string; data: Tutor }>(`${this.apiUrl}/${id}/blacklist`, { reason });
+  }
+
+  // Reativar tutor
+  reactivateTutor(id: string): Observable<{ message: string; data: Tutor }> {
+    return this.http.patch<{ message: string; data: Tutor }>(`${this.apiUrl}/${id}/reactivate`, {});
+  }
 }
+

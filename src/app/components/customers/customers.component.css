@@ -176,9 +176,21 @@
 }
 
 .customer-cpf {
-  margin: 0;
   color: #6b7280;
   font-size: 0.875rem;
+  margin: 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
 }
 
 .customer-actions {
@@ -210,6 +222,20 @@
   background: #fef2f2;
   border-color: #f87171;
   color: #dc2626;
+}
+
+.btn-danger:hover {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-status {
+  color: #6b7280;
+}
+
+.btn-status:hover {
+  background-color: #f3f4f6;
+  color: #374151;
 }
 
 /* Customer Details */
@@ -405,3 +431,4 @@
     justify-content: space-between;
   }
 }
+

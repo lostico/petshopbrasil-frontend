@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { TutorService, Tutor, TutorSearchParams } from '../../services/tutor.service';
+import { StatusModalComponent, TutorStatus } from './status-modal.component';
+import { CustomerDetailModalComponent } from './customer-detail-modal.component';
 
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, StatusModalComponent, CustomerDetailModalComponent],
   templateUrl: './customers.component.html',
   styleUrls: ['./customers.component.css']
 })
@@ -21,6 +23,11 @@ export class CustomersComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalItems = 0;
   itemsPerPage = 10;
+  
+  // Modal state
+  showStatusModal = false;
+  showDetailModal = false;
+  selectedCustomer: Tutor | null = null;
   
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -96,8 +103,8 @@ export class CustomersComponent implements OnInit, OnDestroy {
   }
 
   onViewCustomer(customer: Tutor): void {
-    // TODO: Implementar navegação para visualização
-    console.log('Visualizar cliente:', customer);
+    this.selectedCustomer = customer;
+    this.showDetailModal = true;
   }
 
   onDeleteCustomer(customer: Tutor): void {
@@ -114,6 +121,78 @@ export class CustomersComponent implements OnInit, OnDestroy {
           }
         });
     }
+  }
+
+  onManageStatus(customer: Tutor): void {
+    this.selectedCustomer = customer;
+    this.showStatusModal = true;
+  }
+
+  onStatusModalClose(): void {
+    this.showStatusModal = false;
+    this.selectedCustomer = null;
+  }
+
+  onDetailModalClose(): void {
+    this.showDetailModal = false;
+    this.selectedCustomer = null;
+  }
+
+  onDetailModalEdit(customer: Tutor): void {
+    this.showDetailModal = false;
+    this.onEditCustomer(customer);
+  }
+
+  onDetailModalViewPets(customer: Tutor): void {
+    this.showDetailModal = false;
+    this.router.navigate(['/crm/pets'], { 
+      queryParams: { tutorId: customer.id } 
+    });
+  }
+
+  onDetailModalAddPet(customer: Tutor): void {
+    this.showDetailModal = false;
+    this.router.navigate(['/crm/pets/new', customer.id]);
+  }
+
+  onStatusChange(event: { status: TutorStatus; reason?: string }): void {
+    if (!this.selectedCustomer) return;
+
+    const { status, reason } = event;
+    let request$;
+
+    switch (status) {
+      case 'INACTIVE':
+        request$ = this.tutorService.deactivateTutorStatus(this.selectedCustomer.id, reason);
+        break;
+      case 'SUSPENDED':
+        request$ = this.tutorService.suspendTutor(this.selectedCustomer.id, reason);
+        break;
+      case 'BLACKLISTED':
+        if (!reason) {
+          this.error = 'Motivo é obrigatório para adicionar à lista negra';
+          return;
+        }
+        request$ = this.tutorService.blacklistTutor(this.selectedCustomer.id, reason);
+        break;
+      case 'ACTIVE':
+        request$ = this.tutorService.reactivateTutor(this.selectedCustomer.id);
+        break;
+      default:
+        return;
+    }
+
+    request$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (response) => {
+        this.showStatusModal = false;
+        this.selectedCustomer = null;
+        this.loadCustomers();
+      },
+      error: (error) => {
+        console.error('Erro ao alterar status do cliente:', error);
+        this.error = 'Erro ao alterar status do cliente. Tente novamente.';
+      }
+    });
   }
 
   onAddCustomer(): void {
@@ -144,5 +223,35 @@ export class CustomersComponent implements OnInit, OnDestroy {
 
   getOrdersCount(customer: Tutor): number {
     return customer._count?.orders || 0;
+  }
+
+  getStatusColor(status?: string): string {
+    switch (status) {
+      case 'ACTIVE':
+        return '#10b981';
+      case 'INACTIVE':
+        return '#f59e0b';
+      case 'SUSPENDED':
+        return '#ef4444';
+      case 'BLACKLISTED':
+        return '#1f2937';
+      default:
+        return '#10b981';
+    }
+  }
+
+  getStatusLabel(status?: string): string {
+    switch (status) {
+      case 'ACTIVE':
+        return 'Ativo';
+      case 'INACTIVE':
+        return 'Inativo';
+      case 'SUSPENDED':
+        return 'Suspenso';
+      case 'BLACKLISTED':
+        return 'Lista Negra';
+      default:
+        return 'Ativo';
+    }
   }
 }

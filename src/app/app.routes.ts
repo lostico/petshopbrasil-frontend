@@ -5,12 +5,15 @@ import { MainLayoutComponent } from './components/layout/main-layout.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { CustomersComponent } from './components/customers/customers.component';
 import { CustomerFormComponent } from './components/customers/customer-form/customer-form.component';
+import { PetsComponent } from './components/pets/pets.component';
+import { PetFormComponent } from './components/pets/pet-form/pet-form.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ClinicGuard } from './guards/clinic.guard';
+import { LoginGuard } from './guards/login.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
+  { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
   {
     path: 'clinic-select',
     component: ClinicSelectComponent,
@@ -30,7 +33,10 @@ export const routes: Routes = [
       { path: 'crm/customers', component: CustomersComponent }, // Clientes
       { path: 'crm/customers/new', component: CustomerFormComponent }, // Novo Cliente
       { path: 'crm/customers/edit/:id', component: CustomerFormComponent }, // Editar Cliente
-      { path: 'crm/pets', component: DashboardComponent }, // Pets
+      { path: 'crm/pets', component: PetsComponent }, // Pets
+      { path: 'crm/pets/new/:tutorId', component: PetFormComponent }, // Novo Pet com tutor específico
+      { path: 'crm/pets/new', component: PetFormComponent }, // Novo Pet (sem tutor específico)
+      { path: 'crm/pets/edit/:id', component: PetFormComponent }, // Editar Pet
       { path: 'schedule', component: DashboardComponent }, // Agendamentos
       { path: 'checkin', component: DashboardComponent }, // Check-in/out
       

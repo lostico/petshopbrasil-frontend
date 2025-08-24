@@ -183,15 +183,23 @@ export class AuthService {
     return user?.role === role;
   }
 
-  private clearAuthData(): void {
+  clearAuthData(): void {
+    console.log('Limpando dados de autenticação...');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('selectedClinic'); // Limpar dados da clínica selecionada
     this.currentUserSubject.next(null);
+    console.log('Dados de autenticação limpos com sucesso');
   }
 
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
+  }
+
+  forceLogout(): void {
+    console.log('Forçando logout do usuário...');
+    this.clearAuthData();
+    this.router.navigate(['/login']);
   }
 }

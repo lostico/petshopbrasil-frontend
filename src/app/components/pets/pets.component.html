@@ -1,0 +1,294 @@
+<div class="pets-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <h1>Pets</h1>
+      <p>Gerencie os pets da sua clínica</p>
+    </div>
+    <button class="btn-primary" (click)="onAddPet()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Novo Pet
+    </button>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="search-section">
+    <div class="search-box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input 
+        type="text" 
+        placeholder="Buscar por nome do pet, nome do tutor ou CPF..."
+        [value]="searchTerm"
+        (input)="onSearchChange($event)"
+        class="search-input"
+      >
+    </div>
+    
+    <div class="filters">
+      <select 
+        class="filter-select" 
+        [value]="selectedSpecies"
+        (change)="onSpeciesChange($event)"
+      >
+        @for (option of speciesOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+      
+      <select 
+        class="filter-select" 
+        [value]="selectedGender"
+        (change)="onGenderChange($event)"
+      >
+        @for (option of genderOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  @if (error) {
+    <div class="error-message">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      {{ error }}
+    </div>
+  }
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Carregando pets...</p>
+    </div>
+  }
+
+  <!-- Pets List -->
+  @if (!loading && pets.length > 0) {
+    <div class="pets-list">
+      <div class="pets-grid">
+        @for (pet of pets; track pet.id) {
+          <div class="pet-card">
+            <div class="pet-header">
+              <div class="pet-avatar" [style.background-color]="getPetAvatarColor(pet.species)">
+                <span>{{ getPetAvatar(pet) }}</span>
+              </div>
+              <div class="pet-info">
+                <h3>{{ pet.name }}</h3>
+                <p class="pet-species">{{ getSpeciesLabel(pet.species) }}</p>
+                @if (pet.breed) {
+                  <p class="pet-breed">{{ pet.breed }}</p>
+                }
+                <div class="status-badge" [style.background-color]="getStatusColor(pet.status)">
+                  {{ getStatusLabel(pet.status) }}
+                </div>
+              </div>
+              <div class="pet-actions">
+                <button class="btn-icon" (click)="onViewPet(pet)" title="Visualizar">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button class="btn-icon" (click)="onEditPet(pet)" title="Editar">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button class="btn-icon" (click)="onManageStatus(pet)" title="Gerenciar Status">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M2 12h20"/>
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="pet-details">
+              @if (pet.gender) {
+                <div class="detail-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 2v20"/>
+                    <path d="M2 12h20"/>
+                  </svg>
+                  <span>{{ getGenderLabel(pet.gender) }}</span>
+                </div>
+              }
+
+              @if (pet.birthDate) {
+                <div class="detail-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <span>{{ getAge(pet.birthDate) }}</span>
+                </div>
+              }
+
+              @if (pet.weight) {
+                <div class="detail-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20"/>
+                    <path d="M2 12h20"/>
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+                  <span>{{ pet.weight }}kg</span>
+                </div>
+              }
+
+              @if (pet.color) {
+                <div class="detail-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 2v20"/>
+                    <path d="M2 12h20"/>
+                  </svg>
+                  <span>{{ pet.color }}</span>
+                </div>
+              }
+
+              @if (pet.microchip) {
+                <div class="detail-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                  </svg>
+                  <span>Microchip: {{ pet.microchip }}</span>
+                </div>
+              }
+            </div>
+
+            @if (pet.tutor) {
+              <div class="pet-owner">
+                <div class="owner-info">
+                  <span class="owner-label">Tutor:</span>
+                  <span class="owner-name">{{ pet.tutor.name }}</span>
+                </div>
+                @if (pet.tutor.phone) {
+                  <div class="owner-phone">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    <span>{{ formatPhone(pet.tutor.phone) }}</span>
+                  </div>
+                }
+              </div>
+            }
+
+            <div class="pet-stats">
+              <div class="stat-item">
+                <span class="stat-label">Consultas</span>
+                <span class="stat-value">{{ getAppointmentsCount(pet) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Prontuários</span>
+                <span class="stat-value">{{ getMedicalRecordsCount(pet) }}</span>
+              </div>
+            </div>
+
+            <div class="pet-footer">
+              <span class="pet-date">
+                Cadastrado em {{ pet.createdAt | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading && pets.length === 0) {
+    <div class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+        <path d="M9 12h6"/>
+        <path d="M12 9v6"/>
+      </svg>
+      <h3>Nenhum pet encontrado</h3>
+      @if (searchTerm || selectedSpecies || selectedGender) {
+        <p>
+          Não encontramos pets com os filtros aplicados.
+        </p>
+      }
+      @if (!searchTerm && !selectedSpecies && !selectedGender) {
+        <p>
+          Comece cadastrando seu primeiro pet.
+        </p>
+      }
+      <button class="btn-primary" (click)="onAddPet()">
+        Cadastrar Primeiro Pet
+      </button>
+    </div>
+  }
+
+  <!-- Pagination -->
+  @if (!loading && totalPages > 1) {
+    <div class="pagination">
+      <button 
+        class="btn-pagination" 
+        [disabled]="currentPage === 1"
+        (click)="onPageChange(currentPage - 1)"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15,18 9,12 15,6"/>
+        </svg>
+        Anterior
+      </button>
+
+      <div class="page-numbers">
+        <span class="page-info">
+          Página {{ currentPage }} de {{ totalPages }}
+        </span>
+        <span class="total-info">
+          {{ totalItems }} pet{{ totalItems !== 1 ? 's' : '' }} no total
+        </span>
+      </div>
+
+      <button 
+        class="btn-pagination" 
+        [disabled]="currentPage === totalPages"
+        (click)="onPageChange(currentPage + 1)"
+      >
+        Próxima
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9,18 15,12 9,6"/>
+        </svg>
+      </button>
+    </div>
+  }
+</div>
+
+<!-- Detail Modal -->
+@if (showDetailModal && selectedPet) {
+  <app-pet-detail-modal
+    [pet]="selectedPet"
+    (close)="onDetailModalClose()"
+    (edit)="onDetailModalEdit($event)"
+    (manageStatus)="onDetailModalManageStatus($event)"
+  />
+}
+
+<!-- Status Modal -->
+@if (showStatusModal && selectedPet) {
+  <app-pet-status-modal
+    [pet]="selectedPet"
+    (close)="onStatusModalClose()"
+    (statusChange)="onStatusChange($event)"
+  />
+}

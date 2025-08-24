@@ -22,8 +22,10 @@ export function authInterceptor(request: HttpRequest<unknown>, next: HttpHandler
         if (refreshToken) {
           return handle401Error(request, next, authService, router);
         } else {
-          authService.logout();
-          router.navigate(['/login']);
+          // Se não há refreshToken, fazer logout imediato
+          console.log('Erro 401 detectado - fazendo logout automático');
+          authService.forceLogout();
+          return throwError(() => error);
         }
       }
       return throwError(() => error);
@@ -50,8 +52,9 @@ function handle401Error(
       return next(addToken(request, response.accessToken));
     }),
     catchError((error) => {
-      authService.logout();
-      router.navigate(['/login']);
+      // Se o refresh token também falhou, fazer logout imediato
+      console.log('Refresh token falhou - fazendo logout automático');
+      authService.forceLogout();
       return throwError(() => error);
     })
   );
