@@ -4,13 +4,35 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { TutorService, Tutor, TutorSearchParams } from '../../services/tutor.service';
-import { StatusModalComponent, TutorStatus } from './status-modal.component';
+import { StatusModalComponent } from './status-modal.component';
 import { CustomerDetailModalComponent } from './customer-detail-modal.component';
+import {
+  ButtonComponent,
+  InputComponent,
+  CardComponent,
+  BadgeComponent,
+  AlertComponent
+} from '../../shared/components';
+import { PhoneFormatPipe, CpfFormatPipe } from '../../shared/pipes';
+
+
 
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, FormsModule, StatusModalComponent, CustomerDetailModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    StatusModalComponent,
+    CustomerDetailModalComponent,
+    ButtonComponent,
+    InputComponent,
+    CardComponent,
+    BadgeComponent,
+    AlertComponent,
+    PhoneFormatPipe,
+    CpfFormatPipe
+  ],
   templateUrl: './customers.component.html',
   styleUrls: ['./customers.component.css']
 })
@@ -155,7 +177,7 @@ export class CustomersComponent implements OnInit, OnDestroy {
     this.router.navigate(['/crm/pets/new', customer.id]);
   }
 
-  onStatusChange(event: { status: TutorStatus; reason?: string }): void {
+  onStatusChange(event: { status: string; reason?: string }): void {
     if (!this.selectedCustomer) return;
 
     const { status, reason } = event;
@@ -199,19 +221,7 @@ export class CustomersComponent implements OnInit, OnDestroy {
     this.router.navigate(['/crm/customers/new']);
   }
 
-  formatCPF(cpf: string): string {
-    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
 
-  formatPhone(phone: string): string {
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length === 11) {
-      return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-    } else if (cleaned.length === 10) {
-      return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-    }
-    return phone;
-  }
 
   getPetsCount(customer: Tutor): number {
     return customer.tutor?.pets?.length || 0;
@@ -225,19 +235,47 @@ export class CustomersComponent implements OnInit, OnDestroy {
     return customer._count?.orders || 0;
   }
 
-  getStatusColor(status?: string): string {
+  getStatusVariant(status?: string): 'success' | 'warning' | 'danger' | 'secondary' {
     switch (status) {
       case 'ACTIVE':
-        return '#10b981';
+        return 'success';
       case 'INACTIVE':
-        return '#f59e0b';
+        return 'warning';
       case 'SUSPENDED':
-        return '#ef4444';
+        return 'danger';
       case 'BLACKLISTED':
-        return '#1f2937';
+        return 'secondary';
       default:
-        return '#10b981';
+        return 'success';
     }
+  }
+
+  getStatusColor(status?: string): string {
+    const colors = {
+      'ACTIVE': '#10b981',
+      'INACTIVE': '#f59e0b',
+      'SUSPENDED': '#ef4444',
+      'BLACKLISTED': '#6b7280'
+    };
+    return colors[status as keyof typeof colors] || '#6b7280';
+  }
+
+  getCustomerAvatarColor(name: string): string {
+    const colors = [
+      '#3b82f6', // blue
+      '#8b5cf6', // purple
+      '#10b981', // green
+      '#06b6d4', // cyan
+      '#f59e0b', // amber
+      '#ef4444', // red
+      '#f97316', // orange
+      '#ec4899', // pink
+      '#6366f1', // indigo
+      '#84cc16'  // lime
+    ];
+    
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
   }
 
   getStatusLabel(status?: string): string {

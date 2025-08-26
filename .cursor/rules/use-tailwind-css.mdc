@@ -1,0 +1,5 @@
+---
+description: Always try to use all power of TailwindCSS to build style of the page, grid system, color system, spacing system and all features to improve the application.
+globs:
+alwaysApply: false
+---
