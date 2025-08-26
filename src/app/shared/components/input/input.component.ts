@@ -2,7 +2,7 @@ import { Component, Input, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 
-export type InputType = 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search';
+export type InputType = 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date';
 export type InputSize = 'sm' | 'md' | 'lg';
 
 @Component({
@@ -154,7 +154,7 @@ export type InputSize = 'sm' | 'md' | 'lg';
       <!-- Error Message -->
       <p 
         *ngIf="errorMessage" 
-        class="mt-1 text-sm text-danger-600"
+        class="mt-1 text-sm error-text"
       >
         {{ errorMessage }}
       </p>
@@ -166,7 +166,95 @@ export type InputSize = 'sm' | 'md' | 'lg';
       useExisting: forwardRef(() => InputComponent),
       multi: true
     }
-  ]
+  ],
+  styles: [`
+    :host {
+      display: block;
+    }
+
+    input {
+      font-family: inherit;
+      border-color: #d1d5db !important;
+    }
+
+    /* Placeholder mais suave */
+    input::placeholder {
+      color: #9ca3af !important;
+      opacity: 1;
+    }
+
+    /* Placeholder para Firefox */
+    input::-moz-placeholder {
+      color: #9ca3af !important;
+      opacity: 1;
+    }
+
+    /* Placeholder para Edge */
+    input::-ms-input-placeholder {
+      color: #9ca3af !important;
+    }
+    
+    /* Placeholder para campos de data */
+    input[type="date"]::placeholder {
+      color: #9ca3af !important;
+      opacity: 1;
+    }
+    
+    input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+      color: #9ca3af;
+    }
+    
+    input[type="date"]::-webkit-datetime-edit-text {
+      color: #9ca3af;
+    }
+    
+    input[type="date"]::-webkit-datetime-edit-month-field,
+    input[type="date"]::-webkit-datetime-edit-day-field,
+    input[type="date"]::-webkit-datetime-edit-year-field {
+      color: #9ca3af;
+    }
+    
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.6);
+    }
+
+    /* Estado de erro mais suave */
+    input.invalid,
+    input.border-danger-300 {
+      border-color: #fca5a5 !important;
+      box-shadow: 0 0 0 1px #fca5a5 !important;
+    }
+
+    input.invalid:focus,
+    input.border-danger-300:focus {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+    }
+
+    /* Estado de sucesso */
+    input.valid,
+    input.border-success-300 {
+      border-color: #86efac !important;
+      box-shadow: 0 0 0 1px #86efac !important;
+    }
+
+    input.valid:focus,
+    input.border-success-300:focus {
+      border-color: #22c55e !important;
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2) !important;
+    }
+
+    /* Estado normal com foco */
+    input:focus {
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+    }
+
+    /* Texto de erro */
+    .error-text {
+      color: #ef4444 !important;
+    }
+  `]
 })
 export class InputComponent implements ControlValueAccessor {
   @Input() id = '';
@@ -197,7 +285,7 @@ export class InputComponent implements ControlValueAccessor {
   get inputClasses(): string {
     const baseClasses = [
       'block w-full rounded-md',
-      'border border-secondary-300',
+      'border border-gray-300',
       'transition-colors duration-200',
       'focus:outline-none focus:ring-2 focus:ring-offset-0',
       'disabled:bg-secondary-50 disabled:text-secondary-500',

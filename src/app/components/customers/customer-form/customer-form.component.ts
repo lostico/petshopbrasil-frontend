@@ -4,11 +4,27 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TutorService, Tutor } from '../../../services/tutor.service';
+import {
+  ButtonComponent,
+  InputComponent,
+  SelectComponent,
+  CardComponent,
+  AlertComponent
+} from '../../../shared/components';
+
 
 @Component({
   selector: 'app-customer-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    ButtonComponent,
+    InputComponent,
+    SelectComponent,
+    CardComponent,
+    AlertComponent
+  ],
   templateUrl: './customer-form.component.html',
   styleUrls: ['./customer-form.component.css']
 })
@@ -92,34 +108,16 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
 
   populateForm(customer: Tutor): void {
     this.customerForm.patchValue({
-      cpf: this.formatCPF(customer.cpf),
+      cpf: customer.cpf,
       name: customer.name,
       email: customer.email || '',
-      phone: this.formatPhone(customer.phone),
+      phone: customer.phone,
       birthDate: customer.birthDate ? this.formatDateForInput(customer.birthDate) : '',
       address: customer.address || '',
       city: customer.city || '',
       state: customer.state || '',
-      zipCode: customer.zipCode ? this.formatCEP(customer.zipCode) : ''
+      zipCode: customer.zipCode || ''
     });
-  }
-
-  formatCPF(cpf: string): string {
-    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
-
-  formatPhone(phone: string): string {
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length === 11) {
-      return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-    } else if (cleaned.length === 10) {
-      return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-    }
-    return phone;
-  }
-
-  formatCEP(cep: string): string {
-    return cep.replace(/(\d{5})(\d{3})/, '$1-$2');
   }
 
   formatDateForInput(dateString: string): string {
@@ -356,5 +354,12 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
       'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
       'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
     ];
+  }
+
+  getStateOptions() {
+    return this.getStates().map(state => ({
+      value: state,
+      label: state
+    }));
   }
 }

@@ -345,7 +345,7 @@ export interface StatusOption {
     }
 
     .error-text {
-      color: #dc2626;
+      color: #ef4444;
       font-size: 0.8rem;
       margin: 8px 0 0 0;
     }

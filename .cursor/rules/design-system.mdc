@@ -1,0 +1,5 @@
+---
+description: always try to use components created for design system located into 'shared' folder.
+globs:
+alwaysApply: false
+---
