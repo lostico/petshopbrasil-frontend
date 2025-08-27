@@ -1,11 +1,21 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Pet, PetSpecies, PetGender, PetStatus } from '../../services/pet.service';
+import { ModalComponent, ModalConfig, ModalAction } from '../../shared/components/modal/modal.component';
+import { HighlightCardComponent } from '../../shared/components/highlight-card/highlight-card.component';
+import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
+import { CpfFormatPipe } from '../../shared/pipes/cpf-format.pipe';
 
 @Component({
   selector: 'app-pet-detail-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    ModalComponent,
+    HighlightCardComponent,
+    PhoneFormatPipe,
+    CpfFormatPipe
+  ],
   templateUrl: './pet-detail-modal.component.html',
   styleUrls: ['./pet-detail-modal.component.css']
 })
@@ -17,6 +27,19 @@ export class PetDetailModalComponent {
 
   PetSpecies = PetSpecies;
   PetGender = PetGender;
+
+  modalConfig: ModalConfig = {
+    title: 'Detalhes do Pet',
+    size: 'xl',
+    showCloseButton: true,
+    closeOnOverlayClick: true,
+    showFooter: true,
+    footerActions: [
+      { label: 'Fechar', variant: 'secondary', onClick: () => this.onClose() },
+      { label: 'Gerenciar Status', variant: 'secondary', onClick: () => this.onManageStatus() },
+      { label: 'Editar Pet', variant: 'primary', onClick: () => this.onEdit() }
+    ]
+  };
 
   getSpeciesLabel(species: PetSpecies): string {
     const labels = {
@@ -94,19 +117,7 @@ export class PetDetailModalComponent {
     return labels[status] || 'Desconhecido';
   }
 
-  formatPhone(phone: string): string {
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length === 11) {
-      return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-    } else if (cleaned.length === 10) {
-      return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-    }
-    return phone;
-  }
 
-  formatCPF(cpf: string): string {
-    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
 
   onClose(): void {
     this.close.emit();
@@ -118,12 +129,6 @@ export class PetDetailModalComponent {
 
   onManageStatus(): void {
     this.manageStatus.emit(this.pet);
-  }
-
-  onBackdropClick(event: Event): void {
-    if (event.target === event.currentTarget) {
-      this.onClose();
-    }
   }
 }
 

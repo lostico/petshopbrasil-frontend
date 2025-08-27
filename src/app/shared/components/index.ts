@@ -6,6 +6,7 @@ export * from './card/card.component';
 export * from './badge/badge.component';
 export * from './alert/alert.component';
 export * from './modal/modal.component';
+export * from './highlight-card/highlight-card.component';
 
 // Types
 export type { ButtonVariant, ButtonSize } from './button/button.component';
