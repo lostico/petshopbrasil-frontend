@@ -129,3 +129,4 @@ O estilo visual dos cartões foi **100% restaurado**:
 **Resultado**: Os cartões agora têm exatamente a mesma aparência visual do design original, mas com a estrutura melhorada do design system!
 
 
+
