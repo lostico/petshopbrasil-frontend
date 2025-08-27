@@ -6,11 +6,28 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { PetService, Pet, PetSearchParams, PetSpecies, PetGender, PetStatus } from '../../services/pet.service';
 import { PetDetailModalComponent } from './pet-detail-modal.component';
 import { PetStatusModalComponent } from './pet-status-modal.component';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { InputComponent } from '../../shared/components/input/input.component';
+import { SelectComponent, SelectOption } from '../../shared/components/select/select.component';
+import { CardComponent } from '../../shared/components/card/card.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
 
 @Component({
   selector: 'app-pets',
   standalone: true,
-  imports: [CommonModule, FormsModule, PetDetailModalComponent, PetStatusModalComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    PetDetailModalComponent, 
+    PetStatusModalComponent,
+    ButtonComponent,
+    InputComponent,
+    SelectComponent,
+    CardComponent,
+    AlertComponent,
+    PhoneFormatPipe
+  ],
   templateUrl: './pets.component.html',
   styleUrls: ['./pets.component.css']
 })
@@ -38,7 +55,7 @@ export class PetsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // Species options
-  speciesOptions = [
+  speciesOptions: SelectOption[] = [
     { value: '', label: 'Todas as espécies' },
     { value: PetSpecies.DOG, label: 'Cão' },
     { value: PetSpecies.CAT, label: 'Gato' },
@@ -50,7 +67,7 @@ export class PetsComponent implements OnInit, OnDestroy {
   ];
 
   // Gender options
-  genderOptions = [
+  genderOptions: SelectOption[] = [
     { value: '', label: 'Todos os gêneros' },
     { value: PetGender.MALE, label: 'Macho' },
     { value: PetGender.FEMALE, label: 'Fêmea' }
@@ -155,8 +172,6 @@ export class PetsComponent implements OnInit, OnDestroy {
     this.selectedPet = pet;
     this.showDetailModal = true;
   }
-
-
 
   onDetailModalClose(): void {
     this.showDetailModal = false;
@@ -290,15 +305,5 @@ export class PetsComponent implements OnInit, OnDestroy {
       [PetSpecies.OTHER]: '#6b7280'
     };
     return colors[species] || '#6b7280';
-  }
-
-  formatPhone(phone: string): string {
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.length === 11) {
-      return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-    } else if (cleaned.length === 10) {
-      return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-    }
-    return phone;
   }
 }

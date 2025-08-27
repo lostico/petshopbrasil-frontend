@@ -1,277 +1,263 @@
-<div class="pets-container">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-content">
-      <h1>Pets</h1>
-      <p>Gerencie os pets da sua clínica</p>
+<div class="min-h-screen bg-secondary-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-secondary-900 mb-2">Pets</h1>
+        <p class="text-secondary-600">Gerencie os pets da sua clínica</p>
+      </div>
+      <app-button 
+        label="Novo Pet"
+        variant="primary"
+        (clicked)="onAddPet()"
+        icon="plus">
+      </app-button>
     </div>
-    <button class="btn-primary" (click)="onAddPet()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 5v14M5 12h14"/>
-      </svg>
-      Novo Pet
-    </button>
-  </div>
 
-  <!-- Search and Filters -->
-  <div class="search-section">
-    <div class="search-box">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/>
-        <path d="m21 21-4.35-4.35"/>
-      </svg>
-      <input 
-        type="text" 
+    <!-- Search and Filters -->
+    <div class="flex gap-4 mb-6 flex-wrap">
+      <app-input
+        type="search"
+        leftIcon="search"
         placeholder="Buscar por nome do pet, nome do tutor ou CPF..."
-        [value]="searchTerm"
+        [(ngModel)]="searchTerm"
         (input)="onSearchChange($event)"
-        class="search-input"
-      >
-    </div>
-    
-    <div class="filters">
-      <select 
-        class="filter-select" 
-        [value]="selectedSpecies"
-        (change)="onSpeciesChange($event)"
-      >
-        @for (option of speciesOptions; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
+        class="flex-1 min-w-80">
+      </app-input>
       
-      <select 
-        class="filter-select" 
-        [value]="selectedGender"
+      <app-select
+        placeholder="Todas as espécies"
+        [options]="speciesOptions"
+        [(ngModel)]="selectedSpecies"
+        (change)="onSpeciesChange($event)"
+        class="min-w-48">
+      </app-select>
+      
+      <app-select
+        placeholder="Todos os gêneros"
+        [options]="genderOptions"
+        [(ngModel)]="selectedGender"
         (change)="onGenderChange($event)"
-      >
-        @for (option of genderOptions; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
+        class="min-w-48">
+      </app-select>
     </div>
-  </div>
 
-  <!-- Error Message -->
-  @if (error) {
-    <div class="error-message">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="15" y1="9" x2="9" y2="15"/>
-        <line x1="9" y1="9" x2="15" y2="15"/>
-      </svg>
-      {{ error }}
-    </div>
-  }
+    <!-- Error Message -->
+    @if (error) {
+      <app-alert 
+        type="error"
+        [message]="error"
+        class="mb-6">
+      </app-alert>
+    }
 
-  <!-- Loading -->
-  @if (loading) {
-    <div class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>Carregando pets...</p>
-    </div>
-  }
+    <!-- Loading -->
+    @if (loading) {
+      <div class="flex flex-col items-center justify-center py-16 text-secondary-600">
+        <div class="w-10 h-10 border-4 border-secondary-200 border-t-primary-500 rounded-full animate-spin mb-4"></div>
+        <p>Carregando pets...</p>
+      </div>
+    }
 
-  <!-- Pets List -->
-  @if (!loading && pets.length > 0) {
-    <div class="pets-list">
-      <div class="pets-grid">
+    <!-- Pets List -->
+    @if (!loading && pets.length > 0) {
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         @for (pet of pets; track pet.id) {
-          <div class="pet-card">
-            <div class="pet-header">
-              <div class="pet-avatar" [style.background-color]="getPetAvatarColor(pet.species)">
-                <span>{{ getPetAvatar(pet) }}</span>
-              </div>
-              <div class="pet-info">
-                <h3>{{ pet.name }}</h3>
-                <p class="pet-species">{{ getSpeciesLabel(pet.species) }}</p>
-                @if (pet.breed) {
-                  <p class="pet-breed">{{ pet.breed }}</p>
-                }
-                <div class="status-badge" [style.background-color]="getStatusColor(pet.status)">
-                  {{ getStatusLabel(pet.status) }}
+          <app-card variant="elevated">
+            <div class="p-6">
+              <!-- Pet Header -->
+              <div class="flex items-start gap-4 mb-6">
+                <div 
+                  class="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl flex-shrink-0"
+                  [style.background-color]="getPetAvatarColor(pet.species)">
+                  {{ getPetAvatar(pet) }}
+                </div>
+                
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xl font-bold text-secondary-900 truncate">{{ pet.name }}</h3>
+                    <div class="flex gap-2 flex-shrink-0 ml-4">
+                      <app-button 
+                        variant="secondary"
+                        size="sm"
+                        (clicked)="onViewPet(pet)"
+                        icon="eye"
+                        title="Visualizar">
+                      </app-button>
+                      <app-button 
+                        variant="secondary"
+                        size="sm"
+                        (clicked)="onEditPet(pet)"
+                        icon="edit"
+                        title="Editar">
+                      </app-button>
+                      <app-button 
+                        variant="secondary"
+                        size="sm"
+                        (clicked)="onManageStatus(pet)"
+                        icon="cog"
+                        title="Gerenciar Status">
+                      </app-button>
+                    </div>
+                  </div>
+                  
+                  <p class="text-secondary-600 text-sm mb-1">{{ getSpeciesLabel(pet.species) }}</p>
+                  @if (pet.breed) {
+                    <p class="text-secondary-500 text-sm italic mb-2">{{ pet.breed }}</p>
+                  }
+                  <span 
+                    class="inline-block px-3 py-1 text-xs font-semibold text-white rounded-full uppercase tracking-wide"
+                    [style.background-color]="getStatusColor(pet.status)">
+                    {{ getStatusLabel(pet.status) }}
+                  </span>
                 </div>
               </div>
-              <div class="pet-actions">
-                <button class="btn-icon" (click)="onViewPet(pet)" title="Visualizar">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                </button>
-                <button class="btn-icon" (click)="onEditPet(pet)" title="Editar">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                </button>
-                <button class="btn-icon" (click)="onManageStatus(pet)" title="Gerenciar Status">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2v20M2 12h20"/>
-                    <circle cx="12" cy="12" r="10"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
 
-            <div class="pet-details">
-              @if (pet.gender) {
-                <div class="detail-item">
+              <!-- Pet Details -->
+              <div class="space-y-3 mb-6">
+                <div class="flex items-center gap-2 text-secondary-600 text-sm">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M12 2v20"/>
                     <path d="M2 12h20"/>
                   </svg>
-                  <span>{{ getGenderLabel(pet.gender) }}</span>
+                  <span>{{ pet.gender ? getGenderLabel(pet.gender) : 'Sexo não informado' }}</span>
                 </div>
-              }
 
-              @if (pet.birthDate) {
-                <div class="detail-item">
+                <div class="flex items-center gap-2 text-secondary-600 text-sm">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                     <line x1="16" y1="2" x2="16" y2="6"/>
                     <line x1="8" y1="2" x2="8" y2="6"/>
                     <line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
-                  <span>{{ getAge(pet.birthDate) }}</span>
+                  <span>{{ pet.birthDate ? getAge(pet.birthDate) : 'Idade não informada' }}</span>
                 </div>
-              }
 
-              @if (pet.weight) {
-                <div class="detail-item">
+                <div class="flex items-center gap-2 text-secondary-600 text-sm">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2v20"/>
                     <path d="M2 12h20"/>
                     <circle cx="12" cy="12" r="10"/>
                   </svg>
-                  <span>{{ pet.weight }}kg</span>
+                  <span>{{ pet.weight ? pet.weight + 'kg' : 'Peso não informado' }}</span>
                 </div>
-              }
 
-              @if (pet.color) {
-                <div class="detail-item">
+                <div class="flex items-center gap-2 text-secondary-600 text-sm">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M12 2v20"/>
                     <path d="M2 12h20"/>
                   </svg>
-                  <span>{{ pet.color }}</span>
+                  <span>{{ pet.color ? pet.color : 'Cor não informada' }}</span>
                 </div>
-              }
 
-              @if (pet.microchip) {
-                <div class="detail-item">
+                <div class="flex items-center gap-2 text-secondary-600 text-sm">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
                     <line x1="8" y1="21" x2="16" y2="21"/>
                     <line x1="12" y1="17" x2="12" y2="21"/>
                   </svg>
-                  <span>Microchip: {{ pet.microchip }}</span>
+                  <span>{{ pet.microchip ? 'Microchip: ' + pet.microchip : 'Microchip não informado' }}</span>
                 </div>
-              }
-            </div>
+              </div>
 
-            @if (pet.tutor) {
-              <div class="pet-owner">
-                <div class="owner-info">
-                  <span class="owner-label">Tutor:</span>
-                  <span class="owner-name">{{ pet.tutor.name }}</span>
-                </div>
-                @if (pet.tutor.phone) {
-                  <div class="owner-phone">
+              <!-- Pet Owner -->
+              @if (pet.tutor) {
+                <div class="bg-secondary-50 rounded-lg p-4 mb-6 border border-secondary-200">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="font-semibold text-secondary-700 text-sm">Tutor:</span>
+                    <span class="text-secondary-900 font-medium text-sm">{{ pet.tutor.name }}</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-secondary-600 text-sm">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                     </svg>
-                    <span>{{ formatPhone(pet.tutor.phone) }}</span>
+                    <span>{{ pet.tutor.phone ? (pet.tutor.phone | phoneFormat) : 'Telefone não informado' }}</span>
                   </div>
-                }
-              </div>
-            }
+                </div>
+              }
 
-            <div class="pet-stats">
-              <div class="stat-item">
-                <span class="stat-label">Consultas</span>
-                <span class="stat-value">{{ getAppointmentsCount(pet) }}</span>
+              <!-- Pet Stats -->
+              <div class="flex gap-6 py-4 border-t border-b border-secondary-200 mb-6">
+                <div class="flex flex-col items-center gap-1">
+                  <span class="text-xs font-semibold text-secondary-500 uppercase tracking-wide">Consultas</span>
+                  <span class="text-2xl font-bold text-secondary-900">{{ getAppointmentsCount(pet) }}</span>
+                </div>
+                <div class="flex flex-col items-center gap-1">
+                  <span class="text-xs font-semibold text-secondary-500 uppercase tracking-wide">Prontuários</span>
+                  <span class="text-2xl font-bold text-secondary-900">{{ getMedicalRecordsCount(pet) }}</span>
+                </div>
               </div>
-              <div class="stat-item">
-                <span class="stat-label">Prontuários</span>
-                <span class="stat-value">{{ getMedicalRecordsCount(pet) }}</span>
+
+              <!-- Pet Footer -->
+              <div class="text-center">
+                <span class="text-xs text-secondary-500">
+                  Cadastrado em {{ pet.createdAt | date:'dd/MM/yyyy' }}
+                </span>
               </div>
             </div>
-
-            <div class="pet-footer">
-              <span class="pet-date">
-                Cadastrado em {{ pet.createdAt | date:'dd/MM/yyyy' }}
-              </span>
-            </div>
-          </div>
+          </app-card>
         }
       </div>
-    </div>
-  }
+    }
 
-  <!-- Empty State -->
-  @if (!loading && pets.length === 0) {
-    <div class="empty-state">
-      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-        <circle cx="12" cy="7" r="4"/>
-        <path d="M9 12h6"/>
-        <path d="M12 9v6"/>
-      </svg>
-      <h3>Nenhum pet encontrado</h3>
-      @if (searchTerm || selectedSpecies || selectedGender) {
-        <p>
-          Não encontramos pets com os filtros aplicados.
-        </p>
-      }
-      @if (!searchTerm && !selectedSpecies && !selectedGender) {
-        <p>
-          Comece cadastrando seu primeiro pet.
-        </p>
-      }
-      <button class="btn-primary" (click)="onAddPet()">
-        Cadastrar Primeiro Pet
-      </button>
-    </div>
-  }
-
-  <!-- Pagination -->
-  @if (!loading && totalPages > 1) {
-    <div class="pagination">
-      <button 
-        class="btn-pagination" 
-        [disabled]="currentPage === 1"
-        (click)="onPageChange(currentPage - 1)"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="15,18 9,12 15,6"/>
+    <!-- Empty State -->
+    @if (!loading && pets.length === 0) {
+      <div class="text-center py-16 text-secondary-600">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="mx-auto mb-6 opacity-50">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+          <path d="M9 12h6"/>
+          <path d="M12 9v6"/>
         </svg>
-        Anterior
-      </button>
-
-      <div class="page-numbers">
-        <span class="page-info">
-          Página {{ currentPage }} de {{ totalPages }}
-        </span>
-        <span class="total-info">
-          {{ totalItems }} pet{{ totalItems !== 1 ? 's' : '' }} no total
-        </span>
+        <h3 class="text-2xl font-semibold text-secondary-700 mb-3">Nenhum pet encontrado</h3>
+        @if (searchTerm || selectedSpecies || selectedGender) {
+          <p class="mb-6">Não encontramos pets com os filtros aplicados.</p>
+        }
+        @if (!searchTerm && !selectedSpecies && !selectedGender) {
+          <p class="mb-6">Comece cadastrando seu primeiro pet.</p>
+        }
+        <app-button 
+          label="Cadastrar Primeiro Pet"
+          variant="primary"
+          (clicked)="onAddPet()">
+        </app-button>
       </div>
+    }
 
-      <button 
-        class="btn-pagination" 
-        [disabled]="currentPage === totalPages"
-        (click)="onPageChange(currentPage + 1)"
-      >
-        Próxima
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="9,18 15,12 9,6"/>
-        </svg>
-      </button>
-    </div>
-  }
+    <!-- Pagination -->
+    @if (!loading && totalPages > 1) {
+      <div class="flex justify-center items-center gap-6 py-6 border-t border-secondary-200">
+        <app-button 
+          variant="secondary"
+          size="sm"
+          [disabled]="currentPage === 1"
+          (clicked)="onPageChange(currentPage - 1)"
+          icon="arrow-left"
+          label="Anterior">
+        </app-button>
+
+        <div class="flex flex-col items-center gap-1">
+          <span class="font-semibold text-secondary-700">
+            Página {{ currentPage }} de {{ totalPages }}
+          </span>
+          <span class="text-sm text-secondary-500">
+            {{ totalItems }} pet{{ totalItems !== 1 ? 's' : '' }} no total
+          </span>
+        </div>
+
+        <app-button 
+          variant="secondary"
+          size="sm"
+          [disabled]="currentPage === totalPages"
+          (clicked)="onPageChange(currentPage + 1)"
+          icon="arrow-right"
+          label="Próxima">
+        </app-button>
+      </div>
+    }
+  </div>
 </div>
 
 <!-- Detail Modal -->

@@ -206,3 +206,4 @@ import { CustomerDetailModalComponent } from './customer-detail-modal.component'
 
 **A página de listagem de clientes agora está totalmente funcional e com uma excelente experiência do usuário!**
 
+
