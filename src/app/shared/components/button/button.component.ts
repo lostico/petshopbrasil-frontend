@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -7,7 +8,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
 @Component({
   selector: 'app-button',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, LucideAngularModule],
   template: `
     <button
       [type]="type"
@@ -16,9 +17,10 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
       [class]="buttonClasses"
       [style]="buttonStyles"
     >
+      <!-- Loading spinner -->
       <svg
         *ngIf="loading"
-        class="animate-spin -ml-1 mr-2 h-4 w-4"
+        [class]="getLoadingClasses()"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -38,91 +40,12 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
         ></path>
       </svg>
       
-      <svg
-        *ngIf="icon && !loading"
-        class="h-4 w-4"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          *ngIf="icon === 'plus'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 4v16m8-8H4"
-        ></path>
-        <path
-          *ngIf="icon === 'edit'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-        ></path>
-        <path
-          *ngIf="icon === 'trash'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-        ></path>
-        <path
-          *ngIf="icon === 'arrow-left'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M10 19l-7-7m0 0l7-7m-7 7h18"
-        ></path>
-        <path
-          *ngIf="icon === 'arrow-right'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M14 5l7 7m0 0l-7 7m7-7H3"
-        ></path>
-        <path
-          *ngIf="icon === 'check'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M5 13l4 4L19 7"
-        ></path>
-        <path
-          *ngIf="icon === 'x'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M6 18L18 6M6 6l12 12"
-        ></path>
-        <path
-          *ngIf="icon === 'eye'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-        ></path>
-        <path
-          *ngIf="icon === 'eye'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M9 12a3 3 0 1 0 6 0 3 3 0 0 0-6 0z"
-        ></path>
-        <path
-          *ngIf="icon === 'cog'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-        ></path>
-        <path
-          *ngIf="icon === 'cog'"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-        ></path>
-      </svg>
+      <!-- Lucide Icons -->
+      <lucide-icon 
+        *ngIf="icon && !loading" 
+        [name]="getLucideIconName()" 
+        [class]="getIconClasses()">
+      </lucide-icon>
       
       <span *ngIf="label">{{ label }}</span>
     </button>
@@ -255,6 +178,33 @@ export class ButtonComponent {
 
   get buttonStyles(): string {
     return '';
+  }
+
+  getLucideIconName(): string {
+    const iconMap: Record<string, string> = {
+      'plus': 'plus',
+      'edit': 'edit',
+      'trash': 'trash-2',
+      'arrow-left': 'arrow-left',
+      'arrow-right': 'arrow-right',
+      'check': 'check',
+      'x': 'x',
+      'eye': 'eye',
+      'cog': 'settings'
+    };
+    return iconMap[this.icon || ''] || '';
+  }
+
+  getIconClasses(): string {
+    const baseClasses = 'h-4 w-4';
+    const spacingClass = this.label ? 'mr-2' : '';
+    return `${baseClasses} ${spacingClass}`.trim();
+  }
+
+  getLoadingClasses(): string {
+    const baseClasses = 'animate-spin -ml-1 h-4 w-4';
+    const spacingClass = this.label ? 'mr-2' : '';
+    return `${baseClasses} ${spacingClass}`.trim();
   }
 
   onClick(event: MouseEvent): void {

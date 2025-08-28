@@ -26,21 +26,35 @@ import { CardComponent } from '../card/card.component';
           <p class="text-gray-600 mb-4">Para usar o Lucide Angular em seus componentes:</p>
           
           <div class="bg-gray-50 p-4 rounded-lg">
-            <h4 class="font-semibold text-gray-800 mb-2">1. Importe o ícone desejado:</h4>
-            <pre class="text-sm text-gray-700 bg-white p-2 rounded border">import {{ '{' }} Edit {{ '}' }} from 'lucide-angular';</pre>
+            <h4 class="font-semibold text-gray-800 mb-2">1. Configure os ícones no app.config.ts (já feito):</h4>
+            <pre class="text-sm text-gray-700 bg-white p-2 rounded border">import {{ '{' }} LucideAngularModule, Plus, Edit {{ '}' }} from 'lucide-angular';
+importProvidersFrom(LucideAngularModule.pick({{ '{' }} Plus, Edit {{ '}' }}))</pre>
             
-            <h4 class="font-semibold text-gray-800 mb-2 mt-4">2. Adicione ao imports do componente:</h4>
-            <pre class="text-sm text-gray-700 bg-white p-2 rounded border">imports: [CommonModule, Edit]</pre>
+            <h4 class="font-semibold text-gray-800 mb-2 mt-4">2. Importe o módulo no componente:</h4>
+            <pre class="text-sm text-gray-700 bg-white p-2 rounded border">imports: [CommonModule, LucideAngularModule]</pre>
             
             <h4 class="font-semibold text-gray-800 mb-2 mt-4">3. Use no template:</h4>
-            <pre class="text-sm text-gray-700 bg-white p-2 rounded border">&lt;edit class="h-6 w-6 text-blue-500" /&gt;</pre>
+            <pre class="text-sm text-gray-700 bg-white p-2 rounded border">&lt;lucide-icon name="edit" class="h-6 w-6 text-blue-500"&gt;&lt;/lucide-icon&gt;</pre>
           </div>
           
           <div class="mt-4 p-4 bg-blue-50 rounded-lg">
-            <h4 class="font-semibold text-blue-800 mb-2">Exemplo prático:</h4>
-            <p class="text-blue-700 text-sm">
-              Para testar, crie um novo componente e siga os passos acima. 
-              O Lucide está instalado e pronto para uso!
+            <h4 class="font-semibold text-blue-800 mb-2">Ícones disponíveis:</h4>
+            <p class="text-blue-700 text-sm mb-2">
+              Os seguintes ícones já estão configurados e prontos para uso:
+            </p>
+            <div class="text-blue-700 text-sm grid grid-cols-2 gap-1">
+              <span>• plus</span>
+              <span>• edit</span>
+              <span>• trash-2</span>
+              <span>• arrow-left</span>
+              <span>• arrow-right</span>
+              <span>• check</span>
+              <span>• x</span>
+              <span>• eye</span>
+              <span>• settings</span>
+            </div>
+            <p class="text-blue-700 text-sm mt-2">
+              Para adicionar novos ícones, inclua-os no app.config.ts
             </p>
           </div>
         </div>
