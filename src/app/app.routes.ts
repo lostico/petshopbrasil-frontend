@@ -7,6 +7,7 @@ import { CustomersComponent } from './components/customers/customers.component';
 import { CustomerFormComponent } from './components/customers/customer-form/customer-form.component';
 import { PetsComponent } from './components/pets/pets.component';
 import { PetFormComponent } from './components/pets/pet-form/pet-form.component';
+import { ShowcaseComponent } from './shared/components/showcase/showcase.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ClinicGuard } from './guards/clinic.guard';
 import { LoginGuard } from './guards/login.guard';
@@ -26,6 +27,9 @@ export const routes: Routes = [
     children: [
       // Dashboard
       { path: 'dashboard', component: DashboardComponent },
+      
+      // Design System Showcase
+      { path: 'showcase', component: ShowcaseComponent },
       
       // Vendas & Atendimento
       { path: 'pos', component: DashboardComponent }, // PDV

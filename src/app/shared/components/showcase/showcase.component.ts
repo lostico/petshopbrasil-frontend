@@ -1,441 +1,143 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
-import { 
-  ButtonComponent, 
-  InputComponent, 
-  CardComponent, 
-  BadgeComponent, 
-  AlertComponent 
-} from '../index';
+import { ButtonComponent } from '../button/button.component';
+import { CardComponent } from '../card/card.component';
 
 @Component({
   selector: 'app-showcase',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FormsModule,
-    ButtonComponent,
-    InputComponent,
-    CardComponent,
-    BadgeComponent,
-    AlertComponent
-  ],
+  imports: [CommonModule, ButtonComponent, CardComponent],
   template: `
-    <div class="min-h-screen bg-secondary-50 p-6">
-      <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="mb-8">
-          <h1 class="text-4xl font-bold text-secondary-900 mb-2">
-            Design System Showcase
-          </h1>
-          <p class="text-secondary-600">
-            Demonstração de todos os componentes do design system
-          </p>
-        </div>
-
-        <!-- Alerts Section -->
-        <section class="mb-12">
-          <h2 class="text-2xl font-semibold text-secondary-800 mb-6">Alertas</h2>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <app-alert
-              variant="success"
-              title="Sucesso!"
-              message="Operação realizada com sucesso."
-              [dismissible]="true"
-              (closed)="onAlertClose()">
-            </app-alert>
-
-            <app-alert
-              variant="warning"
-              title="Atenção"
-              message="Esta ação não pode ser desfeita."
-              [dismissible]="true">
-            </app-alert>
-
-            <app-alert
-              variant="danger"
-              title="Erro"
-              message="Ocorreu um erro ao processar sua solicitação.">
-            </app-alert>
-
-            <app-alert
-              variant="info"
-              title="Informação"
-              message="Nova funcionalidade disponível.">
-            </app-alert>
-          </div>
-        </section>
-
-        <!-- Buttons Section -->
-        <section class="mb-12">
-          <h2 class="text-2xl font-semibold text-secondary-800 mb-6">Botões</h2>
-          
-          <!-- Variants -->
-          <div class="mb-8">
-            <h3 class="text-lg font-medium text-secondary-700 mb-4">Variantes</h3>
-            <div class="flex flex-wrap gap-4">
-              <app-button label="Primário" variant="primary" (clicked)="onButtonClick()"></app-button>
-              <app-button label="Secundário" variant="secondary" (clicked)="onButtonClick()"></app-button>
-              <app-button label="Outline" variant="outline" (clicked)="onButtonClick()"></app-button>
-              <app-button label="Ghost" variant="ghost" (clicked)="onButtonClick()"></app-button>
-              <app-button label="Danger" variant="danger" (clicked)="onButtonClick()"></app-button>
-            </div>
-          </div>
-
-          <!-- Sizes -->
-          <div class="mb-8">
-            <h3 class="text-lg font-medium text-secondary-700 mb-4">Tamanhos</h3>
-            <div class="flex flex-wrap items-center gap-4">
-              <app-button label="Pequeno" size="sm" variant="primary" (clicked)="onButtonClick()"></app-button>
-              <app-button label="Médio" size="md" variant="primary" (clicked)="onButtonClick()"></app-button>
-              <app-button label="Grande" size="lg" variant="primary" (clicked)="onButtonClick()"></app-button>
-            </div>
-          </div>
-
-          <!-- With Icons -->
-          <div class="mb-8">
-            <h3 class="text-lg font-medium text-secondary-700 mb-4">Com Ícones</h3>
-            <div class="flex flex-wrap gap-4">
-              <app-button 
-                label="Adicionar" 
-                icon="plus" 
-                variant="primary" 
-                (clicked)="onButtonClick()">
-              </app-button>
-              <app-button 
-                label="Editar" 
-                icon="edit" 
-                variant="secondary" 
-                (clicked)="onButtonClick()">
-              </app-button>
-              <app-button 
-                label="Excluir" 
-                icon="trash" 
-                variant="danger" 
-                (clicked)="onButtonClick()">
-              </app-button>
-            </div>
-          </div>
-
-          <!-- States -->
-          <div class="mb-8">
-            <h3 class="text-lg font-medium text-secondary-700 mb-4">Estados</h3>
-            <div class="flex flex-wrap gap-4">
-                             <app-button 
-                 label="Carregando..." 
-                 [loading]="true" 
-                 variant="primary">
-               </app-button>
-               <app-button 
-                 label="Desabilitado" 
-                 [disabled]="true" 
-                 variant="primary">
-               </app-button>
-            </div>
-          </div>
-        </section>
-
-        <!-- Inputs Section -->
-        <section class="mb-12">
-          <h2 class="text-2xl font-semibold text-secondary-800 mb-6">Inputs</h2>
-          
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Basic Inputs -->
-            <div>
-              <h3 class="text-lg font-medium text-secondary-700 mb-4">Básicos</h3>
-              <div class="space-y-4">
-                <app-input 
-                  label="Nome" 
-                  placeholder="Digite seu nome"
-                  [(ngModel)]="formData.name">
-                </app-input>
-
-                <app-input 
-                  label="Email" 
-                  type="email" 
-                  placeholder="seu@email.com"
-                  [(ngModel)]="formData.email">
-                </app-input>
-
-                <app-input 
-                  label="Telefone" 
-                  type="tel" 
-                  placeholder="(00) 00000-0000"
-                  [(ngModel)]="formData.phone">
-                </app-input>
-              </div>
-            </div>
-
-            <!-- Inputs with Icons -->
-            <div>
-              <h3 class="text-lg font-medium text-secondary-700 mb-4">Com Ícones</h3>
-              <div class="space-y-4">
-                <app-input 
-                  label="Buscar" 
-                  type="search" 
-                  leftIcon="search"
-                  placeholder="Buscar..."
-                  [(ngModel)]="formData.search">
-                </app-input>
-
-                <app-input 
-                  label="Email" 
-                  type="email" 
-                  leftIcon="mail"
-                  placeholder="seu@email.com"
-                  [(ngModel)]="formData.emailWithIcon">
-                </app-input>
-
-                <app-input 
-                  label="Senha" 
-                  type="password" 
-                  leftIcon="user"
-                  rightIcon="eye"
-                  placeholder="Digite sua senha"
-                  [(ngModel)]="formData.password">
-                </app-input>
-              </div>
-            </div>
-          </div>
-
-          <!-- Validation States -->
-          <div class="mt-8">
-            <h3 class="text-lg font-medium text-secondary-700 mb-4">Estados de Validação</h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <app-input 
-                label="Campo Válido" 
-                placeholder="Campo válido"
-                [valid]="true"
-                [(ngModel)]="formData.validField">
-              </app-input>
-
-              <app-input 
-                label="Campo Inválido" 
-                placeholder="Campo inválido"
-                [invalid]="true"
-                errorMessage="Este campo é obrigatório"
-                [(ngModel)]="formData.invalidField">
-              </app-input>
-            </div>
-          </div>
-        </section>
-
-        <!-- Cards Section -->
-        <section class="mb-12">
-          <h2 class="text-2xl font-semibold text-secondary-800 mb-6">Cards</h2>
-          
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Basic Card -->
-            <app-card title="Card Básico" subtitle="Subtítulo do card">
-              <p class="text-secondary-600">
-                Este é um exemplo de card básico com título e subtítulo.
-              </p>
-            </app-card>
-
-            <!-- Elevated Card -->
-            <app-card 
-              title="Card Elevado" 
-              subtitle="Com sombra"
-              variant="elevated"
-              [hover]="true">
-              <p class="text-secondary-600">
-                Card com efeito de elevação e hover.
-              </p>
-            </app-card>
-
-            <!-- Card with Actions -->
-            <app-card 
-              title="Card com Ações" 
-              [headerActions]="true"
-              variant="outlined">
-              
-              <div card-actions>
-                <app-button label="Ação" icon="plus" size="sm" variant="primary"></app-button>
-              </div>
-              
-              <p class="text-secondary-600">
-                Card com ações no cabeçalho.
-              </p>
-            </app-card>
-          </div>
-        </section>
-
-        <!-- Badges Section -->
-        <section class="mb-12">
-          <h2 class="text-2xl font-semibold text-secondary-800 mb-6">Badges</h2>
-          
-          <!-- Variants -->
-          <div class="mb-8">
-            <h3 class="text-lg font-medium text-secondary-700 mb-4">Variantes</h3>
-            <div class="flex flex-wrap gap-4">
-              <app-badge text="Primário" variant="primary"></app-badge>
-              <app-badge text="Secundário" variant="secondary"></app-badge>
-              <app-badge text="Sucesso" variant="success"></app-badge>
-              <app-badge text="Aviso" variant="warning"></app-badge>
-              <app-badge text="Erro" variant="danger"></app-badge>
-              <app-badge text="Info" variant="info"></app-badge>
-            </div>
-          </div>
-
-          <!-- Sizes -->
-          <div class="mb-8">
-            <h3 class="text-lg font-medium text-secondary-700 mb-4">Tamanhos</h3>
-            <div class="flex flex-wrap items-center gap-4">
-              <app-badge text="Pequeno" size="sm" variant="primary"></app-badge>
-              <app-badge text="Médio" size="md" variant="primary"></app-badge>
-              <app-badge text="Grande" size="lg" variant="primary"></app-badge>
-            </div>
-          </div>
-
-          <!-- With Icons -->
-          <div class="mb-8">
-            <h3 class="text-lg font-medium text-secondary-700 mb-4">Com Ícones</h3>
-            <div class="flex flex-wrap gap-4">
-              <app-badge 
-                text="Ativo" 
-                icon="check" 
-                variant="success">
-              </app-badge>
-              <app-badge 
-                text="Em andamento" 
-                icon="clock" 
-                variant="warning">
-              </app-badge>
-              <app-badge 
-                text="Usuário" 
-                icon="user" 
-                variant="info">
-              </app-badge>
-            </div>
-          </div>
-
-          <!-- Outlined -->
-          <div class="mb-8">
-            <h3 class="text-lg font-medium text-secondary-700 mb-4">Outline</h3>
-            <div class="flex flex-wrap gap-4">
-              <app-badge 
-                text="Outline" 
-                variant="primary" 
-                [outlined]="true">
-              </app-badge>
-              <app-badge 
-                text="Rounded" 
-                variant="success" 
-                [rounded]="true">
-              </app-badge>
-            </div>
-          </div>
-        </section>
-
-        <!-- Form Example -->
-        <section class="mb-12">
-          <h2 class="text-2xl font-semibold text-secondary-800 mb-6">Exemplo de Formulário</h2>
-          
-          <app-card title="Formulário de Exemplo" subtitle="Demonstração de uso dos componentes">
-            <form [formGroup]="exampleForm" (ngSubmit)="onSubmit()" class="space-y-6">
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <app-input 
-                  label="Nome Completo" 
-                  placeholder="Digite seu nome completo"
-                  formControlName="name">
-                </app-input>
-
-                <app-input 
-                  label="Email" 
-                  type="email" 
-                  placeholder="seu@email.com"
-                  formControlName="email">
-                </app-input>
-
-                <app-input 
-                  label="Telefone" 
-                  type="tel" 
-                  placeholder="(00) 00000-0000"
-                  formControlName="phone">
-                </app-input>
-
-                <app-input 
-                  label="CPF" 
-                  placeholder="000.000.000-00"
-                  formControlName="cpf">
-                </app-input>
-              </div>
-
-              <div class="flex gap-4">
-                <app-button 
-                  type="submit" 
-                  label="Salvar" 
-                  icon="check" 
-                  variant="primary"
-                  [loading]="loading">
-                </app-button>
-                
-                <app-button 
-                  type="button" 
-                  label="Cancelar" 
-                  variant="secondary"
-                  (clicked)="onCancel()">
-                </app-button>
-              </div>
-            </form>
-          </app-card>
-        </section>
+    <div class="p-6 space-y-8">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Design System - Showcase</h2>
+        <p class="text-gray-600 mb-6">Demonstração dos componentes disponíveis no design system.</p>
       </div>
+
+      <!-- Como usar o Lucide -->
+      <app-card>
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Como usar o Lucide Angular
+          </h3>
+          <p class="text-gray-600 mb-4">Para usar o Lucide Angular em seus componentes:</p>
+          
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-gray-800 mb-2">1. Importe o ícone desejado:</h4>
+            <pre class="text-sm text-gray-700 bg-white p-2 rounded border">import {{ '{' }} Edit {{ '}' }} from 'lucide-angular';</pre>
+            
+            <h4 class="font-semibold text-gray-800 mb-2 mt-4">2. Adicione ao imports do componente:</h4>
+            <pre class="text-sm text-gray-700 bg-white p-2 rounded border">imports: [CommonModule, Edit]</pre>
+            
+            <h4 class="font-semibold text-gray-800 mb-2 mt-4">3. Use no template:</h4>
+            <pre class="text-sm text-gray-700 bg-white p-2 rounded border">&lt;edit class="h-6 w-6 text-blue-500" /&gt;</pre>
+          </div>
+          
+          <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+            <h4 class="font-semibold text-blue-800 mb-2">Exemplo prático:</h4>
+            <p class="text-blue-700 text-sm">
+              Para testar, crie um novo componente e siga os passos acima. 
+              O Lucide está instalado e pronto para uso!
+            </p>
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Botões com Ícones -->
+      <app-card>
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            Botões com Ícones
+          </h3>
+          <p class="text-gray-600 mb-4">Exemplos de botões utilizando ícones:</p>
+          
+          <div class="space-y-4">
+            <div class="flex flex-wrap gap-3">
+              <app-button variant="primary" icon="plus" label="Adicionar"></app-button>
+              <app-button variant="secondary" icon="edit" label="Editar"></app-button>
+              <app-button variant="outline" icon="eye" label="Visualizar"></app-button>
+              <app-button variant="danger" icon="trash" label="Excluir"></app-button>
+              <app-button variant="ghost" icon="cog" label="Configurações"></app-button>
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+              <app-button variant="primary" icon="plus" size="sm"></app-button>
+              <app-button variant="secondary" icon="edit" size="sm"></app-button>
+              <app-button variant="outline" icon="eye" size="sm"></app-button>
+              <app-button variant="danger" icon="trash" size="sm"></app-button>
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+              <app-button variant="primary" icon="plus" size="lg" label="Botão Grande"></app-button>
+              <app-button variant="secondary" icon="edit" size="lg" label="Botão Grande"></app-button>
+            </div>
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Botões com Loading -->
+      <app-card>
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <svg class="h-5 w-5 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Botões com Loading
+          </h3>
+          <p class="text-gray-600 mb-4">Botões em estado de carregamento:</p>
+          
+          <div class="flex flex-wrap gap-3">
+            <app-button variant="primary" [loading]="true" label="Carregando..."></app-button>
+            <app-button variant="secondary" [loading]="true" label="Processando..."></app-button>
+            <app-button variant="outline" [loading]="true" label="Salvando..."></app-button>
+            <app-button variant="danger" [loading]="true" label="Excluindo..."></app-button>
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Variantes de Botões -->
+      <app-card>
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Variantes de Botões
+          </h3>
+          <p class="text-gray-600 mb-4">Diferentes estilos de botões disponíveis:</p>
+          
+          <div class="space-y-4">
+            <div class="flex flex-wrap gap-3">
+              <app-button variant="primary" label="Primary"></app-button>
+              <app-button variant="secondary" label="Secondary"></app-button>
+              <app-button variant="outline" label="Outline"></app-button>
+              <app-button variant="ghost" label="Ghost"></app-button>
+              <app-button variant="danger" label="Danger"></app-button>
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+              <app-button variant="primary" size="sm" label="Small"></app-button>
+              <app-button variant="primary" size="md" label="Medium"></app-button>
+              <app-button variant="primary" size="lg" label="Large"></app-button>
+            </div>
+            
+            <div class="flex flex-wrap gap-3">
+              <app-button variant="primary" [disabled]="true" label="Disabled"></app-button>
+              <app-button variant="secondary" [disabled]="true" label="Disabled"></app-button>
+              <app-button variant="outline" [disabled]="true" label="Disabled"></app-button>
+            </div>
+          </div>
+        </div>
+      </app-card>
     </div>
-  `,
-  styles: []
+  `
 })
-export class ShowcaseComponent {
-  formData = {
-    name: '',
-    email: '',
-    phone: '',
-    search: '',
-    emailWithIcon: '',
-    password: '',
-    validField: 'Campo válido',
-    invalidField: ''
-  };
-
-  exampleForm: FormGroup;
-  loading = false;
-
-  constructor(private fb: FormBuilder) {
-    this.exampleForm = this.fb.group({
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.required],
-      cpf: ['', Validators.required]
-    });
-  }
-
-  onButtonClick(): void {
-    console.log('Botão clicado!');
-  }
-
-  onAlertClose(): void {
-    console.log('Alerta fechado!');
-  }
-
-  onSubmit(): void {
-    if (this.exampleForm.valid) {
-      this.loading = true;
-      console.log('Formulário enviado:', this.exampleForm.value);
-      
-      // Simular envio
-      setTimeout(() => {
-        this.loading = false;
-        console.log('Formulário processado!');
-      }, 2000);
-    } else {
-      console.log('Formulário inválido!');
-    }
-  }
-
-  onCancel(): void {
-    console.log('Cancelado!');
-    this.exampleForm.reset();
-  }
-}
+export class ShowcaseComponent {}
