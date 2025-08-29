@@ -5,11 +5,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { PetService, Pet, PetSpecies, PetGender, CreatePetRequest, UpdatePetRequest } from '../../../services/pet.service';
 import { TutorService, Tutor } from '../../../services/tutor.service';
+import { ButtonComponent } from '../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-pet-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ButtonComponent],
   templateUrl: './pet-form.component.html',
   styleUrls: ['./pet-form.component.css']
 })

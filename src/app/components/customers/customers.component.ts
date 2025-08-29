@@ -6,14 +6,13 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { TutorService, Tutor, TutorSearchParams } from '../../services/tutor.service';
 import { StatusModalComponent } from './status-modal.component';
 import { CustomerDetailModalComponent } from './customer-detail-modal.component';
-import {
-  ButtonComponent,
-  InputComponent,
-  CardComponent,
-  BadgeComponent,
-  AlertComponent
-} from '../../shared/components';
-import { PhoneFormatPipe, CpfFormatPipe } from '../../shared/pipes';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { InputComponent } from '../../shared/components/input/input.component';
+import { CardComponent } from '../../shared/components/card/card.component';
+import { BadgeComponent } from '../../shared/components/badge/badge.component';
+import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
+import { CpfFormatPipe } from '../../shared/pipes/cpf-format.pipe';
 
 
 

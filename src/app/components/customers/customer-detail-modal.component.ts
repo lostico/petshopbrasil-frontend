@@ -1,8 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Tutor } from '../../services/tutor.service';
-import { ModalComponent, ModalConfig, ButtonComponent } from '../../shared/components';
-import { PhoneFormatPipe, CpfFormatPipe, CepFormatPipe } from '../../shared/pipes';
+import { ModalComponent, ModalConfig } from '../../shared/components';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
+import { CpfFormatPipe } from '../../shared/pipes/cpf-format.pipe';
+import { CepFormatPipe } from '../../shared/pipes/cep-format.pipe';
 
 @Component({
   selector: 'app-customer-detail-modal',
@@ -102,7 +105,7 @@ import { PhoneFormatPipe, CpfFormatPipe, CepFormatPipe } from '../../shared/pipe
           <div class="section-actions">
             <app-button 
               label="Ver Pets"
-              icon="check"
+              icon="eye"
               variant="secondary"
               size="sm"
               (clicked)="onViewPets()">
