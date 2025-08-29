@@ -5,14 +5,28 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { PetService, Pet, PetSpecies, PetGender, CreatePetRequest, UpdatePetRequest } from '../../../services/pet.service';
 import { TutorService, Tutor } from '../../../services/tutor.service';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
+import {
+  ButtonComponent,
+  InputComponent,
+  SelectComponent,
+  CardComponent,
+  AlertComponent
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-pet-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ButtonComponent],
-  templateUrl: './pet-form.component.html',
-  styleUrls: ['./pet-form.component.css']
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    ReactiveFormsModule, 
+    ButtonComponent,
+    InputComponent,
+    SelectComponent,
+    CardComponent,
+    AlertComponent
+  ],
+  templateUrl: './pet-form.component.html'
 })
 export class PetFormComponent implements OnInit, OnDestroy {
   petForm!: FormGroup;
@@ -21,7 +35,6 @@ export class PetFormComponent implements OnInit, OnDestroy {
   isEditMode = false;
   petId: string = '';
   selectedTutorId: string = '';
-  tutors: Tutor[] = [];
   selectedTutor: Tutor | null = null;
   petTutor: any = null; // Tutor do pet em modo de edição
   
@@ -67,29 +80,27 @@ export class PetFormComponent implements OnInit, OnDestroy {
         // Em modo de edição, remover validação do tutorId
         this.petForm.get('tutorId')?.clearValidators();
         this.petForm.get('tutorId')?.updateValueAndValidity();
-      }
-      
-      // Verificar se há tutorId no path (cadastro direto para um tutor)
-      if (params['tutorId'] && params['tutorId'].trim() !== '') {
-        this.selectedTutorId = params['tutorId'].trim();
-        this.petForm.patchValue({ tutorId: this.selectedTutorId });
-        this.loadTutorInfo();
-      } else if (!this.isEditMode && !params['tutorId']) {
-        // Em modo de criação sem tutor pré-selecionado, adicionar validação
-        this.petForm.get('tutorId')?.setValidators([Validators.required, Validators.minLength(10)]);
-        this.petForm.get('tutorId')?.updateValueAndValidity();
-      } else if (this.isEditMode) {
-        // Em modo de edição, garantir que não há validação
-        this.petForm.get('tutorId')?.clearValidators();
-        this.petForm.get('tutorId')?.updateValueAndValidity();
-      } else if (!this.isEditMode && params['tutorId']) {
-        // Em modo de criação com tutor pré-selecionado, remover validação
-        this.petForm.get('tutorId')?.clearValidators();
-        this.petForm.get('tutorId')?.updateValueAndValidity();
+      } else {
+        // Modo de criação - sempre deve ter um tutor
+        this.isEditMode = false;
+        
+        // Verificar se há idTutor no path (obrigatório)
+        if (params['idTutor'] && params['idTutor'].trim() !== '') {
+          this.selectedTutorId = params['idTutor'].trim();
+          this.petForm.patchValue({ tutorId: this.selectedTutorId });
+          this.loadTutorInfo();
+          // Remover validação do tutorId pois já está pré-selecionado
+          this.petForm.get('tutorId')?.clearValidators();
+          this.petForm.get('tutorId')?.updateValueAndValidity();
+        } else {
+          // Se não há tutor, redirecionar para lista de pets
+          this.error = 'Tutor não informado. Não é possível cadastrar um pet sem um cliente válido.';
+          setTimeout(() => {
+            this.router.navigate(['/crm/pets']);
+          }, 3000);
+        }
       }
     });
-
-    this.loadTutors();
   }
 
   ngOnDestroy(): void {
@@ -155,19 +166,7 @@ export class PetFormComponent implements OnInit, OnDestroy {
       });
   }
 
-  private loadTutors(): void {
-    this.tutorService.getTutors({ limit: 100 })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          this.tutors = response.data;
-        },
-        error: (error: any) => {
-          console.error('Erro ao carregar tutores:', error);
-          this.error = 'Erro ao carregar lista de tutores.';
-        }
-      });
-  }
+
 
   private loadTutorInfo(): void {
     if (this.selectedTutorId && this.selectedTutorId.trim() !== '') {
@@ -181,14 +180,19 @@ export class PetFormComponent implements OnInit, OnDestroy {
             console.error('Erro ao carregar informações do tutor:', error);
             
             if (error.status === 404) {
-              this.error = 'Tutor não encontrado';
+              this.error = 'Cliente não encontrado. Não é possível cadastrar um pet sem um cliente válido.';
             } else {
-              this.error = 'Erro ao carregar informações do tutor.';
+              this.error = 'Erro ao carregar informações do cliente. Tente novamente.';
             }
             
             // Limpar o tutorId inválido do formulário
             this.petForm.patchValue({ tutorId: '' });
             this.selectedTutorId = '';
+            
+            // Redirecionar após 3 segundos
+            setTimeout(() => {
+              this.router.navigate(['/crm/pets']);
+            }, 3000);
           }
         });
     }
@@ -333,6 +337,37 @@ export class PetFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  getFieldError(fieldName: string): string {
+    const field = this.petForm.get(fieldName);
+    
+    if (field?.errors && field.touched) {
+      if (field.errors['required']) {
+        return 'Este campo é obrigatório';
+      }
+      if (field.errors['minlength']) {
+        return `Mínimo de ${field.errors['minlength'].requiredLength} caracteres`;
+      }
+      if (field.errors['min']) {
+        return 'Valor deve ser maior que zero';
+      }
+      if (field.errors['pattern']) {
+        return 'Formato inválido';
+      }
+    }
+    
+    return '';
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.petForm.get(fieldName);
+    return !!(field?.invalid && field.touched);
+  }
+
+  isFieldValid(fieldName: string): boolean {
+    const field = this.petForm.get(fieldName);
+    return !!(field?.valid && field.touched);
+  }
+
   getSpeciesLabel(species: PetSpecies): string {
     const option = this.speciesOptions.find(opt => opt.value === species);
     return option ? option.label : species;
@@ -343,10 +378,7 @@ export class PetFormComponent implements OnInit, OnDestroy {
     return option ? option.label : gender;
   }
 
-  getTutorName(tutorId: string): string {
-    const tutor = this.tutors.find(t => t.id === tutorId);
-    return tutor ? tutor.name : 'Tutor não encontrado';
-  }
+
 
   formatCPF(cpf: string): string {
     return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');

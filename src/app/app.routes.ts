@@ -38,8 +38,7 @@ export const routes: Routes = [
       { path: 'crm/customers/new', component: CustomerFormComponent }, // Novo Cliente
       { path: 'crm/customers/edit/:id', component: CustomerFormComponent }, // Editar Cliente
       { path: 'crm/pets', component: PetsComponent }, // Pets
-      { path: 'crm/pets/new/:tutorId', component: PetFormComponent }, // Novo Pet com tutor específico
-      { path: 'crm/pets/new', component: PetFormComponent }, // Novo Pet (sem tutor específico)
+      { path: 'crm/pets/new/:idTutor', component: PetFormComponent }, // Novo Pet com tutor específico
       { path: 'crm/pets/edit/:id', component: PetFormComponent }, // Editar Pet
       { path: 'schedule', component: DashboardComponent }, // Agendamentos
       { path: 'checkin', component: DashboardComponent }, // Check-in/out

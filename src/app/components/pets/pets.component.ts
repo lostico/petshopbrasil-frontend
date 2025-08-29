@@ -222,11 +222,15 @@ export class PetsComponent implements OnInit, OnDestroy {
   }
 
   onAddPet(): void {
-    // Se há um tutorId selecionado, usar a rota específica
+    // Sempre deve ter um tutor selecionado para adicionar um pet
     if (this.selectedTutorId) {
       this.router.navigate(['/crm/pets/new', this.selectedTutorId]);
     } else {
-      this.router.navigate(['/crm/pets/new']);
+      // Se não há tutor selecionado, mostrar mensagem de erro
+      this.error = 'Selecione um cliente para adicionar um pet.';
+      setTimeout(() => {
+        this.error = '';
+      }, 3000);
     }
   }
 

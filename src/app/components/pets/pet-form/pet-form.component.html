@@ -1,228 +1,370 @@
-<div class="pet-form-container">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-content">
-      <h1>{{ isEditMode ? 'Editar Pet' : 'Novo Pet' }}</h1>
-      <p>{{ isEditMode ? 'Atualize as informações do pet' : 'Cadastre um novo pet para a clínica' }}</p>
+<div class="min-h-screen bg-secondary-50 p-6">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-secondary-900 mb-2">{{ isEditMode ? 'Editar Pet' : 'Novo Pet' }}</h1>
+        <p class="text-secondary-600">{{ isEditMode ? 'Atualize as informações do pet' : 'Cadastre um novo pet para a clínica' }}</p>
+      </div>
+      <app-button 
+        label="Voltar"
+        icon="arrow-left"
+        variant="secondary"
+        (clicked)="onCancel()">
+      </app-button>
     </div>
-  </div>
 
-  <!-- Error Message -->
-  @if (error) {
-    <div class="error-message">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="15" y1="9" x2="9" y2="15"/>
-        <line x1="9" y1="9" x2="15" y2="15"/>
-      </svg>
-      {{ error }}
-    </div>
-  }
+    <!-- Error Message -->
+    @if (error) {
+      <div class="mb-6">
+        <app-alert
+          variant="danger"
+          title="Erro"
+          [message]="error">
+        </app-alert>
+      </div>
+    }
 
-  <!-- Loading -->
-  @if (loading) {
-    <div class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>{{ isEditMode ? 'Carregando pet...' : 'Salvando pet...' }}</p>
-    </div>
-  }
-
-  <!-- Form -->
-  @if (!loading) {
-    <form [formGroup]="petForm" (ngSubmit)="onSubmit()" class="pet-form">
-      <div class="form-grid">
-        <!-- Informações Básicas -->
-        <div class="form-section">
-          <h3>Informações Básicas</h3>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label for="name">Nome do Pet *</label>
-              <input 
-                type="text" 
-                id="name" 
-                formControlName="name" 
+    <!-- Form -->
+    <form [formGroup]="petForm" (ngSubmit)="onSubmit()" [class.form-disabled]="loading">
+      <app-card variant="elevated">
+        <div class="p-6">
+          <!-- Informações Básicas -->
+          <div class="mb-8">
+            <h2 class="text-xl font-semibold text-secondary-900 mb-6">Informações Básicas</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <app-input
+                label="Nome do Pet *"
+                type="text"
+                formControlName="name"
                 placeholder="Digite o nome do pet"
-                [class.error]="petForm.get('name')?.invalid && petForm.get('name')?.touched"
-              >
-              @if (petForm.get('name')?.invalid && petForm.get('name')?.touched) {
-                <span class="error-text">Nome é obrigatório e deve ter pelo menos 2 caracteres</span>
-              }
-            </div>
+                [errorMessage]="getFieldError('name')"
+                [invalid]="isFieldInvalid('name')"
+                [valid]="isFieldValid('name')">
+              </app-input>
 
-            <div class="form-group">
-              <label for="species">Espécie *</label>
-              <select 
-                id="species" 
+              <app-select
+                label="Espécie *"
+                placeholder="Selecione a espécie"
                 formControlName="species"
-                [class.error]="petForm.get('species')?.invalid && petForm.get('species')?.touched"
-              >
-                <option value="">Selecione a espécie</option>
-                @for (option of speciesOptions; track option.value) {
-                  <option [value]="option.value">{{ option.label }}</option>
-                }
-              </select>
-              @if (petForm.get('species')?.invalid && petForm.get('species')?.touched) {
-                <span class="error-text">Espécie é obrigatória</span>
-              }
-            </div>
-          </div>
+                [options]="speciesOptions"
+                [errorMessage]="getFieldError('species')"
+                [invalid]="isFieldInvalid('species')"
+                [valid]="isFieldValid('species')">
+              </app-select>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="breed">Raça</label>
-              <input 
-                type="text" 
-                id="breed" 
-                formControlName="breed" 
-                placeholder="Digite a raça"
-              >
-            </div>
+              <app-input
+                label="Raça"
+                type="text"
+                formControlName="breed"
+                placeholder="Digite a raça">
+              </app-input>
 
-            <div class="form-group">
-              <label for="gender">Gênero</label>
-              <select id="gender" formControlName="gender">
-                <option value="">Selecione o gênero</option>
-                @for (option of genderOptions; track option.value) {
-                  <option [value]="option.value">{{ option.label }}</option>
-                }
-              </select>
-            </div>
-          </div>
+              <app-select
+                label="Gênero"
+                placeholder="Selecione o gênero"
+                formControlName="gender"
+                [options]="genderOptions">
+              </app-select>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="birthDate">Data de Nascimento</label>
-              <input 
-                type="date" 
-                id="birthDate" 
-                formControlName="birthDate"
-              >
-            </div>
+              <app-input
+                label="Data de Nascimento"
+                type="date"
+                formControlName="birthDate">
+              </app-input>
 
-            <div class="form-group">
-              <label for="weight">Peso (kg)</label>
-              <input 
-                type="number" 
-                id="weight" 
-                formControlName="weight" 
+              <app-input
+                label="Peso (kg)"
+                type="number"
+                formControlName="weight"
                 placeholder="0.0"
-                step="0.1"
-                min="0"
-                [class.error]="petForm.get('weight')?.invalid && petForm.get('weight')?.touched"
-              >
-              @if (petForm.get('weight')?.invalid && petForm.get('weight')?.touched) {
-                <span class="error-text">Peso deve ser um número positivo</span>
-              }
+                [errorMessage]="getFieldError('weight')"
+                [invalid]="isFieldInvalid('weight')"
+                [valid]="isFieldValid('weight')">
+              </app-input>
+
+              <app-input
+                label="Cor"
+                type="text"
+                formControlName="color"
+                placeholder="Digite a cor">
+              </app-input>
+
+              <app-input
+                label="Microchip"
+                type="text"
+                formControlName="microchip"
+                placeholder="Número do microchip">
+              </app-input>
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="color">Cor</label>
-              <input 
-                type="text" 
-                id="color" 
-                formControlName="color" 
-                placeholder="Digite a cor"
-              >
-            </div>
-
-            <div class="form-group">
-              <label for="microchip">Microchip</label>
-              <input 
-                type="text" 
-                id="microchip" 
-                formControlName="microchip" 
-                placeholder="Número do microchip"
-              >
-            </div>
+          <!-- Tutor Responsável -->
+          <div>
+            <h2 class="text-xl font-semibold text-secondary-900 mb-6">Tutor Responsável</h2>
+            
+            @if (isEditMode && petTutor) {
+              <!-- Cartão do Tutor Fixo (Modo Edição) -->
+              <div class="tutor-card-fixed">
+                <div class="tutor-header">
+                  <div class="tutor-avatar-large">
+                    {{ petTutor.name.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="tutor-info">
+                    <h4 class="tutor-name">{{ petTutor.name }}</h4>
+                    <p class="tutor-cpf">{{ formatCPF(petTutor.cpf) }}</p>
+                  </div>
+                </div>
+                
+                <div class="tutor-details">
+                  @if (petTutor.phone) {
+                    <div class="tutor-contact-item">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                      <span>{{ formatPhone(petTutor.phone) }}</span>
+                    </div>
+                  }
+                  <div class="tutor-contact-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    <span>{{ petTutor.email || 'Não informado' }}</span>
+                  </div>
+                </div>
+                
+                <div class="tutor-warning">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  <span>O tutor não pode ser alterado nesta tela. Use a área de migração para transferir o pet.</span>
+                </div>
+              </div>
+            } @else if (selectedTutor) {
+              <!-- Cartão do Tutor Selecionado (Modo Criação com tutor pré-selecionado) -->
+              <div class="tutor-card-selected">
+                <div class="tutor-header">
+                  <div class="tutor-avatar-large">
+                    {{ selectedTutor.name.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="tutor-info">
+                    <h4 class="tutor-name">{{ selectedTutor.name }}</h4>
+                    <p class="tutor-cpf">{{ formatCPF(selectedTutor.cpf) }}</p>
+                  </div>
+                </div>
+                
+                <div class="tutor-details">
+                  @if (selectedTutor.phone) {
+                    <div class="tutor-contact-item">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                      <span>{{ formatPhone(selectedTutor.phone) }}</span>
+                    </div>
+                  }
+                  <div class="tutor-contact-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    <span>{{ selectedTutor.email || 'Não informado' }}</span>
+                  </div>
+                </div>
+              </div>
+            } @else if (!isEditMode && !selectedTutor && error) {
+              <!-- Mensagem de erro quando não há tutor válido -->
+              <div class="tutor-error-card">
+                <div class="tutor-error-content">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  <div class="tutor-error-text">
+                    <h4>Cliente não encontrado</h4>
+                    <p>Não é possível cadastrar um pet sem um cliente válido. Redirecionando para a lista de pets...</p>
+                  </div>
+                </div>
+              </div>
+            }
           </div>
         </div>
-
-                 <!-- Tutor -->
-         <div class="form-section">
-           <h3>Tutor Responsável</h3>
-           
-           @if (isEditMode && petTutor) {
-             <!-- Cartão do Tutor Fixo (Modo Edição) -->
-             <div class="tutor-card fixed">
-               <div class="tutor-avatar">
-                 <span>{{ petTutor.name.charAt(0).toUpperCase() }}</span>
-               </div>
-               <div class="tutor-info">
-                 <h4>{{ petTutor.name }}</h4>
-                 <div class="tutor-details">
-                   <span class="tutor-cpf">CPF: {{ formatCPF(petTutor.cpf) }}</span>
-                   @if (petTutor.phone) {
-                     <span class="tutor-phone">Tel: {{ formatPhone(petTutor.phone) }}</span>
-                   }
-                   @if (petTutor.email) {
-                     <span class="tutor-email">{{ petTutor.email }}</span>
-                   }
-                 </div>
-                 <div class="tutor-note">
-                   <small>⚠️ O tutor não pode ser alterado nesta tela. Use a área de migração para transferir o pet.</small>
-                 </div>
-               </div>
-             </div>
-           } @else if (selectedTutor) {
-             <!-- Cartão do Tutor Selecionado (Modo Criação com tutor pré-selecionado) -->
-             <div class="tutor-card">
-               <div class="tutor-avatar">
-                 <span>{{ selectedTutor.name.charAt(0).toUpperCase() }}</span>
-               </div>
-               <div class="tutor-info">
-                 <h4>{{ selectedTutor.name }}</h4>
-                 <div class="tutor-details">
-                   <span class="tutor-cpf">CPF: {{ formatCPF(selectedTutor.cpf) }}</span>
-                   @if (selectedTutor.phone) {
-                     <span class="tutor-phone">Tel: {{ formatPhone(selectedTutor.phone) }}</span>
-                   }
-                   @if (selectedTutor.email) {
-                     <span class="tutor-email">{{ selectedTutor.email }}</span>
-                   }
-                 </div>
-               </div>
-             </div>
-           } @else {
-             <!-- Select de Tutor (Modo Criação sem tutor pré-selecionado) -->
-             <div class="form-group">
-               <label for="tutorId">Tutor *</label>
-               <select 
-                 id="tutorId" 
-                 formControlName="tutorId"
-                 [class.error]="petForm.get('tutorId')?.invalid && petForm.get('tutorId')?.touched"
-               >
-                 <option value="">Selecione o tutor</option>
-                 @for (tutor of tutors; track tutor.id) {
-                   <option [value]="tutor.id">{{ tutor.name }} - {{ tutor.cpf }}</option>
-                 }
-               </select>
-               @if (petForm.get('tutorId')?.invalid && petForm.get('tutorId')?.touched) {
-                 <span class="error-text">Tutor é obrigatório</span>
-               }
-             </div>
-           }
-         </div>
-      </div>
+      </app-card>
 
       <!-- Form Actions -->
-      <div class="form-actions">
-        <app-button
-          variant="ghost"
+      <div class="flex items-center justify-end gap-4 mt-8">
+        <app-button 
           label="Cancelar"
+          variant="secondary"
           (clicked)="onCancel()">
         </app-button>
-        <app-button
-          type="submit"
-          variant="primary"
-          icon="check"
+        
+        <app-button 
           [label]="isEditMode ? 'Atualizar Pet' : 'Cadastrar Pet'"
+          variant="primary"
           [loading]="loading"
-          [disabled]="petForm.invalid">
+          [disabled]="loading || petForm.invalid"
+          type="submit">
         </app-button>
       </div>
     </form>
-  }
+  </div>
 </div>
+
+<style>
+/* Estilos para os cartões do tutor */
+.tutor-card-fixed,
+.tutor-card-selected {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.tutor-card-fixed {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #0ea5e9;
+}
+
+.tutor-card-fixed::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  border-radius: 12px;
+  z-index: -1;
+  opacity: 0.1;
+}
+
+.tutor-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.tutor-avatar-large {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.tutor-info h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.tutor-cpf {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+  margin: 0;
+}
+
+.tutor-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tutor-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.tutor-contact-item svg {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.tutor-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #1e40af;
+  font-weight: 500;
+}
+
+.tutor-warning svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tutor-error-card {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 2px solid #fecaca;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.tutor-error-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-radius: 12px;
+  z-index: -1;
+  opacity: 0.1;
+}
+
+.tutor-error-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.tutor-error-content svg {
+  color: #ef4444;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tutor-error-text h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.tutor-error-text p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #7f1d1d;
+  font-weight: 500;
+}
+</style>
