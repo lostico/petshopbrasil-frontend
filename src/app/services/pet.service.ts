@@ -23,6 +23,7 @@ export interface Pet {
     cpf: string;
     phone?: string;
     email?: string;
+    birthDate?: string;
   };
   createdAt: string | Date;
   updatedAt: string | Date;

@@ -117,6 +117,17 @@ export class PetDetailModalComponent {
     return labels[status] || 'Desconhecido';
   }
 
+  formatBirthDate(dateString?: string): string {
+    if (!dateString) return 'Não informado';
+    
+    // Extrai apenas a parte da data (YYYY-MM-DD) ignorando o timezone
+    const datePart = dateString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    
+    // Retorna no formato dd/MM/yyyy
+    return `${day}/${month}/${year}`;
+  }
+
 
 
   onClose(): void {
