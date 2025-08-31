@@ -1,0 +1,194 @@
+<div class="container mx-auto px-4 py-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">
+          {{ isEditMode ? 'Editar Serviço' : 'Novo Serviço' }}
+        </h1>
+        <p class="text-gray-600 mt-1">
+          {{ isEditMode ? 'Atualize as informações do serviço' : 'Cadastre um novo serviço para a clínica' }}
+        </p>
+      </div>
+      <app-button variant="secondary" size="md" icon="arrow-left" label="Voltar" (clicked)="onCancel()"
+        class="w-full sm:w-auto">
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex items-center justify-center py-12">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-gray-600">Carregando serviço...</p>
+    </div>
+  </div>
+
+  <!-- Formulário -->
+  <div *ngIf="!loading">
+    <!-- Alert de erro -->
+    <div class="mb-4">
+      <app-alert *ngIf="error" type="error" [message]="error" class="mb-6">
+      </app-alert>
+    </div>
+
+    <!-- Alert de sucesso -->
+    <div class="mb-4">
+      <app-alert *ngIf="success" type="success" [message]="success" class="mb-6">
+      </app-alert>
+    </div>
+
+    <form [formGroup]="serviceForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Coluna Esquerda -->
+        <div class="space-y-6">
+          <!-- Nome do Serviço -->
+          <app-card>
+            <div class="space-y-4">
+              <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                  Nome do Serviço *
+                </label>
+                <app-input id="name" type="text" placeholder="Ex: Consulta Veterinária" formControlName="name"
+                  [class]="name?.invalid && name?.touched ? 'border-red-500' : ''" class="w-full">
+                </app-input>
+                <div *ngIf="name?.invalid && name?.touched" class="mt-1 text-sm text-red-600">
+                  <span *ngIf="name?.errors?.['required']">Nome é obrigatório</span>
+                  <span *ngIf="name?.errors?.['minlength']">Nome deve ter pelo menos 3 caracteres</span>
+                  <span *ngIf="name?.errors?.['maxlength']">Nome deve ter no máximo 100 caracteres</span>
+                </div>
+              </div>
+
+              <!-- Descrição -->
+              <div>
+                <app-textarea id="description" label="Descrição" placeholder="Descreva o serviço oferecido..."
+                  [rows]="4" [maxlength]="500" [showCharacterCounter]="true" formControlName="description"
+                  [invalid]="!!(description?.invalid && description?.touched)"
+                  [errorMessage]="description?.invalid && description?.touched && description?.errors?.['maxlength'] ? 'Descrição deve ter no máximo 500 caracteres' : ''"
+                  class="w-full">
+                </app-textarea>
+              </div>
+
+              <!-- Categoria -->
+              <div>
+                <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+                  Categoria *
+                </label>
+                <app-select id="category" formControlName="category" [options]="categories"
+                  placeholder="Selecione uma categoria"
+                  [class]="category?.invalid && category?.touched ? 'border-red-500' : ''" class="w-full">
+                </app-select>
+                <div *ngIf="category?.invalid && category?.touched" class="mt-1 text-sm text-red-600">
+                  <span *ngIf="category?.errors?.['required']">Categoria é obrigatória</span>
+                </div>
+              </div>
+            </div>
+          </app-card>
+        </div>
+
+        <!-- Coluna Direita -->
+        <div class="space-y-6">
+          <!-- Preço e Duração -->
+          <div>
+            <app-card>
+              <div class="space-y-4">
+                <!-- Preço -->
+                <div>
+                  <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
+                    Preço (R$) *
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-2 text-gray-500">R$</span>
+                    <app-input id="price" type="number" step="0.01" min="0.01" placeholder="0,00" formControlName="price"
+                      (input)="onPriceChange($event)" [class]="price?.invalid && price?.touched ? 'border-red-500' : ''"
+                      class="w-full pl-10">
+                    </app-input>
+                  </div>
+                  <div *ngIf="price?.invalid && price?.touched" class="mt-1 text-sm text-red-600">
+                    <span *ngIf="price?.errors?.['required']">Preço é obrigatório</span>
+                    <span *ngIf="price?.errors?.['min']">Preço deve ser maior que zero</span>
+                    <span *ngIf="price?.errors?.['max']">Preço deve ser menor que R$ 999.999,99</span>
+                  </div>
+                </div>
+
+                <!-- Duração -->
+                <div>
+                  <label for="duration" class="block text-sm font-medium text-gray-700 mb-2">
+                    Duração (minutos) *
+                  </label>
+                  <app-input id="duration" type="number" min="1" max="480" placeholder="30" formControlName="duration"
+                    (input)="onDurationChange($event)"
+                    [class]="duration?.invalid && duration?.touched ? 'border-red-500' : ''" class="w-full">
+                  </app-input>
+                  <div *ngIf="duration?.invalid && duration?.touched" class="mt-1 text-sm text-red-600">
+                    <span *ngIf="duration?.errors?.['required']">Duração é obrigatória</span>
+                    <span *ngIf="duration?.errors?.['min']">Duração deve ser pelo menos 1 minuto</span>
+                    <span *ngIf="duration?.errors?.['max']">Duração deve ser no máximo 480 minutos (8 horas)</span>
+                  </div>
+                  <div class="mt-1 text-sm text-gray-500">
+                    {{ formatDuration(duration?.value || 0) }}
+                  </div>
+                </div>
+
+                <!-- Status -->
+                <div>
+                  <label class="flex items-center">
+                    <input type="checkbox" formControlName="isActive"
+                      class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <span class="ml-2 text-sm font-medium text-gray-700">
+                      Serviço Ativo
+                    </span>
+                  </label>
+                  <p class="mt-1 text-sm text-gray-500">
+                    Serviços inativos não aparecerão para agendamento
+                  </p>
+                </div>
+              </div>
+            </app-card>
+          </div>
+
+          <!-- Informações Adicionais -->
+          <div *ngIf="isEditMode && service">
+            <app-card>
+              <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-900">Informações do Serviço</h3>
+
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span class="text-gray-500">Criado em:</span>
+                    <p class="font-medium">{{ service.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Última atualização:</span>
+                    <p class="font-medium">{{ service.updatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                  </div>
+                </div>
+
+                <div *ngIf="service._count" class="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span class="text-gray-500">Agendamentos:</span>
+                    <p class="font-medium">{{ service._count.appointments }}</p>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Pedidos:</span>
+                    <p class="font-medium">{{ service._count.orderItems }}</p>
+                  </div>
+                </div>
+              </div>
+            </app-card>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botões de Ação -->
+      <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+        <app-button type="button" variant="secondary" label="Cancelar" (clicked)="onCancel()" [disabled]="submitting">
+        </app-button>
+
+        <app-button type="submit" variant="primary" [label]="isEditMode ? 'Atualizar Serviço' : 'Criar Serviço'"
+          [loading]="submitting" [disabled]="serviceForm.invalid || submitting">
+        </app-button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,211 @@
+<div class="container mx-auto px-4 py-6">
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex items-center justify-center py-12">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-gray-600">Carregando serviço...</p>
+    </div>
+  </div>
+
+  <!-- Erro -->
+  <app-alert 
+    *ngIf="error" 
+    type="error" 
+    [message]="error"
+    class="mb-6">
+  </app-alert>
+
+  <!-- Conteúdo do Serviço -->
+  <div *ngIf="!loading && service">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ service.name }}</h1>
+        <p class="text-gray-600 mt-1">Detalhes do serviço</p>
+      </div>
+      <div class="flex items-center space-x-3">
+        <app-button
+          variant="secondary"
+          size="md"
+          icon="arrow-left"
+          label="Voltar"
+          (clicked)="onBack()">
+        </app-button>
+        <app-button
+          variant="primary"
+          size="md"
+          icon="edit"
+          label="Editar"
+          (clicked)="onEdit()">
+        </app-button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Informações Principais -->
+      <div class="lg:col-span-2 space-y-8">
+        <!-- Card de Informações Básicas -->
+        <div>
+          <app-card>
+            <div class="space-y-6">
+              <div class="flex items-start justify-between">
+                <div>
+                  <h2 class="text-xl font-semibold text-gray-900">{{ service.name }}</h2>
+                  <div class="flex items-center space-x-3 mt-2">
+                                       <app-badge 
+                       [variant]="service.isActive ? 'success' : 'danger'"
+                       [text]="getStatusText(service.isActive)"
+                       class="text-sm">
+                     </app-badge>
+                    <app-badge 
+                      [variant]="'secondary'"
+                      [text]="getCategoryName(service.category)"
+                      class="text-sm">
+                    </app-badge>
+                  </div>
+                </div>
+                <app-button
+                  variant="ghost"
+                  size="sm"
+                  [icon]="service.isActive ? 'x' : 'check'"
+                  (clicked)="onToggleStatus()"
+                  [class]="service.isActive ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'">
+                </app-button>
+              </div>
+
+              <!-- Descrição -->
+              <div *ngIf="service.description">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Descrição</h3>
+                <p class="text-gray-600 leading-relaxed">{{ service.description }}</p>
+              </div>
+
+              <!-- Preço e Duração -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <div class="flex items-center">
+                    <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    </svg>
+                    <div>
+                      <p class="text-sm font-medium text-gray-700">Preço</p>
+                      <p class="text-lg font-bold text-green-600">{{ formatPrice(service.price) }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <div class="flex items-center">
+                    <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                      <p class="text-sm font-medium text-gray-700">Duração</p>
+                      <p class="text-lg font-bold text-blue-600">{{ formatDuration(service.duration) }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </app-card>
+        </div>
+
+        <!-- Estatísticas -->
+        <div *ngIf="service._count">
+          <app-card>
+            <div class="space-y-4">
+              <h3 class="text-lg font-medium text-gray-900">Estatísticas</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                  <div class="text-2xl font-bold text-blue-600">{{ service._count.appointments }}</div>
+                  <div class="text-sm text-gray-600">Agendamentos</div>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                  <div class="text-2xl font-bold text-purple-600">{{ service._count.orderItems }}</div>
+                  <div class="text-sm text-gray-600">Pedidos</div>
+                </div>
+              </div>
+            </div>
+          </app-card>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-8">
+        <!-- Informações do Sistema -->
+        <div>
+          <app-card>
+            <div class="space-y-4">
+              <h3 class="text-lg font-medium text-gray-900">Informações do Sistema</h3>
+              
+              <div class="space-y-3">
+                <div>
+                  <span class="text-sm text-gray-500">Criado em</span>
+                  <p class="text-sm font-medium text-gray-900">{{ formatDate(service.createdAt) }}</p>
+                </div>
+                
+                <div>
+                  <span class="text-sm text-gray-500">Última atualização</span>
+                  <p class="text-sm font-medium text-gray-900">{{ formatDate(service.updatedAt) }}</p>
+                </div>
+                
+                <div>
+                  <span class="text-sm text-gray-500">ID do Serviço</span>
+                  <p class="text-sm font-mono text-gray-900">{{ service.id }}</p>
+                </div>
+              </div>
+            </div>
+          </app-card>
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div>
+          <app-card>
+            <div class="space-y-4">
+              <h3 class="text-lg font-medium text-gray-900">Ações Rápidas</h3>
+              
+              <div class="space-y-3">
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  icon="edit"
+                  label="Editar Serviço"
+                  class="w-full justify-start"
+                  (clicked)="onEdit()">
+                </app-button>
+                
+                <app-button
+                  variant="danger"
+                  size="sm"
+                  [icon]="service.isActive ? 'x' : 'check'"
+                  [label]="(service.isActive ? 'Desativar' : 'Ativar') + ' Serviço'"
+                  class="w-full justify-start"
+                  (clicked)="onToggleStatus()">
+                </app-button>
+              </div>
+            </div>
+          </app-card>
+        </div>
+
+        <!-- Categoria -->
+        <div>
+          <app-card>
+          <div class="space-y-4">
+            <h3 class="text-lg font-medium text-gray-900">Categoria</h3>
+            
+            <div class="flex items-center">
+              <app-badge 
+                [variant]="'secondary'"
+                [text]="getCategoryName(service.category)"
+                class="text-sm">
+              </app-badge>
+            </div>
+            
+            <p class="text-sm text-gray-600">
+              Este serviço está classificado como {{ getCategoryName(service.category).toLowerCase() }}.
+            </p>
+          </div>
+        </app-card>
+      </div>
+    </div>
+  </div>
+</div>

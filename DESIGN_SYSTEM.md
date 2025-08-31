@@ -1,371 +1,388 @@
-# Design System - PetShop Brasil
+# Design System - PetShop Brasil Frontend
 
-## 📋 Visão Geral
+## Visão Geral
 
-Este design system foi criado para garantir consistência visual e de experiência do usuário em todo o projeto PetShop Brasil. Ele é baseado no Tailwind CSS e utiliza componentes Angular standalone para máxima flexibilidade e reutilização.
+Este documento descreve os padrões de design, componentes e diretrizes utilizados no projeto PetShop Brasil Frontend.
 
-## 🎯 Objetivos
+## Componentes
 
-- **Consistência**: Padronizar a aparência e comportamento dos componentes
-- **Produtividade**: Acelerar o desenvolvimento com componentes reutilizáveis
-- **Manutenibilidade**: Facilitar mudanças globais através de tokens centralizados
-- **Acessibilidade**: Garantir que todos os componentes sigam as melhores práticas de acessibilidade
-- **Responsividade**: Componentes que funcionam perfeitamente em todos os dispositivos
+### Cards
 
-## 🏗️ Arquitetura
+#### Espaçamento Entre Cards
 
-```
-src/app/shared/
-├── components/          # Componentes reutilizáveis
-│   ├── button/
-│   ├── input/
-│   ├── card/
-│   ├── badge/
-│   ├── alert/
-│   ├── modal/
-│   └── index.ts
-├── tokens/             # Tokens de design
-│   └── design-tokens.ts
-└── utils/              # Utilitários
-    └── class-utils.ts
+Para garantir espaçamento adequado entre cards, especialmente quando há cards condicionais (`*ngIf`), use a seguinte estrutura:
+
+```html
+<!-- ✅ Estrutura Correta -->
+<div class="space-y-6">
+  <div>
+    <app-card>
+      <!-- Conteúdo do card -->
+    </app-card>
+  </div>
+  <div *ngIf="condicao">
+    <app-card>
+      <!-- Conteúdo do card condicional -->
+    </app-card>
+  </div>
+</div>
 ```
 
-## 🎨 Tokens de Design
+**Por que usar essa estrutura:**
+- O `space-y-6` do Tailwind CSS aplica `margin-top: 1.5rem` a todos os elementos filhos diretos (exceto o primeiro)
+- Cada card envolvido em uma `div` garante que o espaçamento seja aplicado corretamente
+- Funciona mesmo quando alguns cards são condicionais
+- Mantém consistência visual em todo o projeto
 
-### Cores
+**Alternativas de espaçamento:**
+- `space-y-4`: 1rem (16px) - Espaçamento menor
+- `space-y-6`: 1.5rem (24px) - Espaçamento padrão
+- `space-y-8`: 2rem (32px) - Espaçamento maior
 
-O sistema utiliza uma paleta de cores consistente com variações para diferentes estados:
+#### Exemplo de Implementação
 
-```typescript
-// Cores Primárias
-primary: {
-  50: '#eff6ff',   // Muito claro
-  500: '#3b82f6',  // Principal
-  900: '#1e3a8a',  // Muito escuro
-}
+```html
+<!-- Service Form -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <!-- Coluna Esquerda -->
+  <div class="space-y-6">
+    <div>
+      <app-card>
+        <!-- Formulário básico -->
+      </app-card>
+    </div>
+  </div>
 
-// Cores de Status
-success: { 500: '#22c55e' }  // Verde
-warning: { 500: '#f59e0b' }  // Amarelo
-danger: { 500: '#ef4444' }   // Vermelho
+  <!-- Coluna Direita -->
+  <div class="space-y-6">
+    <div>
+      <app-card>
+        <!-- Preço e duração -->
+      </app-card>
+    </div>
+    <div *ngIf="isEditMode && service">
+      <app-card>
+        <!-- Informações adicionais -->
+      </app-card>
+    </div>
+  </div>
+</div>
 ```
-
-### Tipografia
-
-```typescript
-// Famílias de Fontes
-fontFamily: {
-  sans: ['Inter', 'system-ui', 'sans-serif'],
-  display: ['Poppins', 'system-ui', 'sans-serif'],
-}
-
-// Tamanhos
-fontSize: {
-  sm: ['0.875rem', { lineHeight: '1.25rem' }],
-  base: ['1rem', { lineHeight: '1.5rem' }],
-  lg: ['1.125rem', { lineHeight: '1.75rem' }],
-}
-```
-
-### Espaçamentos
-
-```typescript
-spacing: {
-  xs: '0.25rem',    // 4px
-  sm: '0.5rem',     // 8px
-  md: '1rem',       // 16px
-  lg: '1.5rem',     // 24px
-  xl: '2rem',       // 32px
-}
-```
-
-## 🧩 Componentes
-
-### Button
-
-Componente de botão com múltiplas variantes e estados.
-
-```typescript
-import { ButtonComponent } from '@shared/components';
-
-// Uso básico
-<app-button label="Salvar" variant="primary" (clicked)="onSave()"></app-button>
-
-// Com ícone
-<app-button 
-  label="Adicionar" 
-  icon="plus" 
-  variant="primary" 
-  size="lg">
-</app-button>
-
-// Estados
-<app-button 
-  label="Carregando..." 
-  loading="true" 
-  disabled="true">
-</app-button>
-```
-
-**Variantes**: `primary`, `secondary`, `outline`, `ghost`, `danger`
-**Tamanhos**: `sm`, `md`, `lg`
-**Ícones**: `plus`, `edit`, `trash`, `arrow-left`, `arrow-right`, `check`, `x`
 
 ### Input
 
-Componente de input com validação e ícones.
+### Textarea
 
-```typescript
-import { InputComponent } from '@shared/components';
+Componente de textarea reutilizável do design system.
 
-// Uso básico
-<app-input 
-  label="Email" 
-  type="email" 
-  placeholder="seu@email.com"
-  [(ngModel)]="email">
-</app-input>
+#### Características
 
-// Com ícone e validação
-<app-input 
-  label="Telefone" 
-  type="tel" 
-  leftIcon="phone"
-  [valid]="isValid"
-  [invalid]="hasError"
-  errorMessage="Telefone inválido">
-</app-input>
+- **ControlValueAccessor**: Compatível com Reactive Forms
+- **Estados visuais**: Normal, foco, erro, sucesso e desabilitado
+- **Contador de caracteres**: Opcional com limite configurável
+- **Tamanhos**: sm, md, lg
+- **Responsivo**: Adaptável a diferentes tamanhos de tela
+- **Acessível**: Suporte a labels, aria-labels e navegação por teclado
+
+#### Uso Básico
+
+```html
+<app-textarea
+  id="description"
+  label="Descrição"
+  placeholder="Digite sua descrição..."
+  formControlName="description">
+</app-textarea>
 ```
 
-**Tipos**: `text`, `email`, `password`, `number`, `tel`, `url`, `search`
-**Tamanhos**: `sm`, `md`, `lg`
-**Ícones**: `search`, `mail`, `phone`, `user`, `eye`, `eye-off`, `check`, `x`
+#### Propriedades
 
-### Card
+| Propriedade | Tipo | Padrão | Descrição |
+|-------------|------|--------|-----------|
+| `id` | string | '' | ID único do textarea |
+| `label` | string | '' | Label do campo |
+| `placeholder` | string | '' | Texto de placeholder |
+| `size` | TextareaSize | 'md' | Tamanho do textarea (sm, md, lg) |
+| `rows` | number | 4 | Número de linhas visíveis |
+| `disabled` | boolean | false | Se o campo está desabilitado |
+| `readonly` | boolean | false | Se o campo é somente leitura |
+| `required` | boolean | false | Se o campo é obrigatório |
+| `maxlength` | number | undefined | Limite máximo de caracteres |
+| `minlength` | number | undefined | Limite mínimo de caracteres |
+| `showCharacterCounter` | boolean | false | Mostrar contador de caracteres |
+| `helperText` | string | '' | Texto de ajuda |
+| `errorMessage` | string | '' | Mensagem de erro |
+| `valid` | boolean | false | Estado de sucesso |
+| `invalid` | boolean | false | Estado de erro |
+| `noResize` | boolean | false | Desabilitar redimensionamento |
 
-Componente de card para organizar conteúdo.
+#### Exemplos
 
-```typescript
-import { CardComponent } from '@shared/components';
-
-// Card básico
-<app-card title="Título do Card" subtitle="Subtítulo">
-  <p>Conteúdo do card</p>
-</app-card>
-
-// Com ações no header
-<app-card 
-  title="Lista de Clientes" 
-  [headerActions]="true"
-  variant="elevated">
-  
-  <div card-actions>
-    <app-button label="Adicionar" icon="plus" size="sm"></app-button>
-  </div>
-  
-  <p>Lista de clientes...</p>
-</app-card>
+**Com contador de caracteres:**
+```html
+<app-textarea
+  id="description"
+  label="Descrição"
+  placeholder="Digite sua descrição..."
+  [maxlength]="500"
+  [showCharacterCounter]="true"
+  formControlName="description">
+</app-textarea>
 ```
 
-**Variantes**: `default`, `elevated`, `outlined`, `flat`
-
-### Badge
-
-Componente para status e labels.
-
-```typescript
-import { BadgeComponent } from '@shared/components';
-
-// Badge básico
-<app-badge text="Ativo" variant="success"></app-badge>
-
-// Com ícone
-<app-badge 
-  text="Em andamento" 
-  icon="clock" 
-  variant="warning"
-  outlined="true">
-</app-badge>
+**Com validação e mensagem de erro:**
+```html
+<app-textarea
+  id="description"
+  label="Descrição"
+  placeholder="Digite sua descrição..."
+  formControlName="description"
+  [invalid]="description?.invalid && description?.touched"
+  [errorMessage]="description?.errors?.['required'] ? 'Descrição é obrigatória' : ''">
+</app-textarea>
 ```
 
-**Variantes**: `primary`, `secondary`, `success`, `warning`, `danger`, `info`
-**Tamanhos**: `sm`, `md`, `lg`
+### Button
+
+### Select
 
 ### Alert
 
-Componente para mensagens de feedback.
-
-```typescript
-import { AlertComponent } from '@shared/components';
-
-// Alerta de sucesso
-<app-alert 
-  variant="success"
-  title="Sucesso!"
-  message="Operação realizada com sucesso."
-  [dismissible]="true"
-  (closed)="onAlertClose()">
-</app-alert>
-
-// Alerta de erro
-<app-alert 
-  variant="danger"
-  title="Erro"
-  message="Ocorreu um erro ao processar sua solicitação.">
-</app-alert>
-```
-
-**Variantes**: `success`, `warning`, `danger`, `info`
-**Tamanhos**: `sm`, `md`, `lg`
-
 ### Modal
 
-Componente de modal reutilizável e padronizado.
+### Badge
 
-```typescript
-import { ModalComponent, ModalConfig } from '@shared/components';
+## Cores
 
-// Modal básico
-<app-modal 
-  [config]="modalConfig"
-  [isOpen]="showModal"
-  (close)="onCloseModal()"
->
-  <p>Conteúdo do modal aqui...</p>
-</app-modal>
+### Paleta Principal
 
-// Configuração do modal
-const modalConfig: ModalConfig = {
-  title: 'Título do Modal',
-  size: 'md',
-  showFooter: true,
-  footerActions: [
-    {
-      label: 'Cancelar',
-      variant: 'secondary',
-      onClick: () => this.onCancel()
-    },
-    {
-      label: 'Salvar',
-      variant: 'primary',
-      onClick: () => this.onSave()
-    }
-  ]
-};
+- **Primary**: Azul (#3B82F6)
+- **Secondary**: Cinza (#6B7280)
+- **Success**: Verde (#22C55E)
+- **Warning**: Amarelo (#F59E0B)
+- **Danger**: Vermelho (#EF4444)
+
+### Paleta de Cinzas
+
+- **50**: #F9FAFB
+- **100**: #F3F4F6
+- **200**: #E5E7EB
+- **300**: #D1D5DB
+- **400**: #9CA3AF
+- **500**: #6B7280
+- **600**: #4B5563
+- **700**: #374151
+- **800**: #1F2937
+- **900**: #111827
+
+## Tipografia
+
+### Hierarquia
+
+- **H1**: `text-3xl font-bold` (30px)
+- **H2**: `text-2xl font-semibold` (24px)
+- **H3**: `text-xl font-semibold` (20px)
+- **H4**: `text-lg font-medium` (18px)
+- **Body**: `text-sm` (14px)
+- **Small**: `text-xs` (12px)
+
+### Pesos
+
+- **Light**: `font-light`
+- **Normal**: `font-normal`
+- **Medium**: `font-medium`
+- **Semibold**: `font-semibold`
+- **Bold**: `font-bold`
+
+## Espaçamento
+
+### Sistema de Spacing
+
+Baseado no Tailwind CSS com incrementos de 4px:
+
+- **0**: 0px
+- **1**: 4px
+- **2**: 8px
+- **3**: 12px
+- **4**: 16px
+- **5**: 20px
+- **6**: 24px
+- **8**: 32px
+- **10**: 40px
+- **12**: 48px
+- **16**: 64px
+- **20**: 80px
+
+### Uso Recomendado
+
+- **Espaçamento interno de componentes**: `p-4` ou `p-5`
+- **Espaçamento entre elementos**: `space-y-4` ou `space-y-6`
+- **Espaçamento entre seções**: `space-y-8` ou `space-y-10`
+- **Margens laterais**: `mx-4` ou `mx-6`
+
+## Grid System
+
+### Breakpoints
+
+- **sm**: 640px
+- **md**: 768px
+- **lg**: 1024px
+- **xl**: 1280px
+- **2xl**: 1536px
+
+### Layouts Comuns
+
+**Formulário de duas colunas:**
+```html
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <!-- Coluna esquerda -->
+  <div class="space-y-6">
+    <!-- Cards -->
+  </div>
+  
+  <!-- Coluna direita -->
+  <div class="space-y-6">
+    <!-- Cards -->
+  </div>
+</div>
 ```
 
-**Tamanhos**: `sm`, `md`, `lg`, `xl`, `full`
-**Variantes de Botão**: `primary`, `secondary`, `danger`, `outline`, `ghost`
-
-## 🛠️ Utilitários
-
-### Class Utils
-
-Utilitários para gerenciamento de classes CSS.
-
-```typescript
-import { classNames, variantClasses, stateClasses } from '@shared/utils/class-utils';
-
-// Combinação de classes
-const classes = classNames(
-  'base-class',
-  { 'conditional-class': condition },
-  ['array-classes']
-);
-
-// Classes de variante
-const buttonClasses = variantClasses(
-  'btn-base',
-  {
-    primary: 'btn-primary',
-    secondary: 'btn-secondary'
-  },
-  'primary'
-);
-
-// Classes de estado
-const inputClasses = stateClasses('input-base', {
-  disabled: true,
-  focused: false,
-  loading: false
-});
+**Layout de três colunas:**
+```html
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <!-- Coluna principal -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Cards principais -->
+  </div>
+  
+  <!-- Sidebar -->
+  <div class="space-y-6">
+    <!-- Cards da sidebar -->
+  </div>
+</div>
 ```
 
-## 📱 Responsividade
+## Estados e Interações
 
-Todos os componentes são responsivos por padrão, utilizando os breakpoints do Tailwind:
+### Estados de Formulário
 
-- `xs`: 475px
-- `sm`: 640px
-- `md`: 768px
-- `lg`: 1024px
-- `xl`: 1280px
-- `2xl`: 1536px
-- `3xl`: 1600px
+- **Normal**: Borda cinza, sem sombra
+- **Foco**: Borda azul, sombra azul suave
+- **Erro**: Borda vermelha, sombra vermelha suave
+- **Sucesso**: Borda verde, sombra verde suave
+- **Desabilitado**: Fundo cinza claro, texto cinza
 
-## ♿ Acessibilidade
+### Transições
 
-O design system segue as melhores práticas de acessibilidade:
+- **Duração padrão**: `duration-200` (200ms)
+- **Easing**: `ease-in-out`
+- **Propriedades**: `transition-all`
 
-- **ARIA Labels**: Todos os componentes incluem labels apropriados
-- **Focus Management**: Estados de foco visíveis e navegáveis
-- **Keyboard Navigation**: Suporte completo para navegação por teclado
-- **Screen Readers**: Estrutura semântica adequada
-- **Color Contrast**: Contraste de cores adequado (WCAG AA)
+## Acessibilidade
 
-## 🎨 Temas
+### Diretrizes
 
-O sistema suporta temas através de variáveis CSS:
+- Use `aria-label` para elementos sem texto visível
+- Mantenha contraste adequado (mínimo 4.5:1)
+- Suporte navegação por teclado
+- Use `focus-visible` para indicadores de foco
+- Implemente `ControlValueAccessor` em componentes de formulário
 
-```css
-:root {
-  --color-primary: #3b82f6;
-  --color-secondary: #64748b;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+### Exemplos
+
+```html
+<!-- Botão com aria-label -->
+<button aria-label="Fechar modal" class="...">
+  <svg>...</svg>
+</button>
+
+<!-- Input com label associado -->
+<label for="email">Email</label>
+<input id="email" type="email" aria-describedby="email-help">
+<div id="email-help">Digite seu endereço de email</div>
+```
+
+## Responsividade
+
+### Abordagem Mobile-First
+
+- Comece com estilos para mobile
+- Use breakpoints para adicionar estilos para telas maiores
+- Teste em diferentes tamanhos de tela
+
+### Padrões Comuns
+
+```html
+<!-- Grid responsivo -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+
+<!-- Espaçamento responsivo -->
+<div class="p-4 md:p-6 lg:p-8">
+
+<!-- Texto responsivo -->
+<h1 class="text-2xl md:text-3xl lg:text-4xl">
+```
+
+## Performance
+
+### Otimizações
+
+- Use `trackBy` em `*ngFor` para melhor performance
+- Implemente `OnPush` change detection quando apropriado
+- Lazy load de componentes pesados
+- Use `async` pipe para observables
+
+### Exemplos
+
+```typescript
+// trackBy function
+trackByFn(index: number, item: any): any {
+  return item.id;
 }
+
+// OnPush change detection
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
 ```
 
-## 📋 Checklist de Implementação
+## Convenções de Nomenclatura
 
-Antes de usar um componente, verifique:
+### Classes CSS
 
-- [ ] O componente está importado corretamente
-- [ ] As props obrigatórias estão definidas
-- [ ] Os eventos estão sendo tratados
-- [ ] O componente é responsivo
-- [ ] A acessibilidade está adequada
-- [ ] O tema está sendo aplicado corretamente
+- Use classes utilitárias do Tailwind quando possível
+- Para classes customizadas, use kebab-case
+- Mantenha consistência na nomenclatura
 
-## 🔄 Migração
+### Componentes
 
-Para migrar componentes existentes para o design system:
+- Use PascalCase para nomes de componentes
+- Prefixo `app-` para componentes do design system
+- Nomes descritivos e claros
 
-1. **Identifique** o componente a ser migrado
-2. **Analise** as funcionalidades necessárias
-3. **Substitua** pelo componente do design system
-4. **Teste** a funcionalidade e aparência
-5. **Remova** o código CSS customizado desnecessário
+### Variáveis
 
-## 📚 Recursos Adicionais
+- Use camelCase para variáveis TypeScript
+- Nomes descritivos que indicam o propósito
+- Evite abreviações confusas
 
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [Angular Component Architecture](https://angular.io/guide/component-overview)
-- [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
-- [Material Design Principles](https://material.io/design)
+## Manutenção
 
-## 🤝 Contribuição
+### Atualizações
 
-Para contribuir com o design system:
+- Mantenha a documentação atualizada
+- Teste componentes após mudanças
+- Use versionamento semântico
+- Documente breaking changes
 
-1. **Discuta** a mudança com a equipe
-2. **Documente** as alterações
-3. **Teste** em diferentes cenários
-4. **Mantenha** a consistência com o sistema existente
-5. **Atualize** esta documentação
+### Revisão de Código
+
+- Verifique aderência aos padrões
+- Teste responsividade
+- Valide acessibilidade
+- Confirme performance
 
 ---
 
-**Lembre-se**: O design system é um produto vivo que evolui com o projeto. Mantenha-o atualizado e consistente!
+*Este documento deve ser mantido atualizado conforme o design system evolui.*
 

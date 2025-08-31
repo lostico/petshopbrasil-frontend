@@ -7,6 +7,9 @@ import { CustomersComponent } from './components/customers/customers.component';
 import { CustomerFormComponent } from './components/customers/customer-form/customer-form.component';
 import { PetsComponent } from './components/pets/pets.component';
 import { PetFormComponent } from './components/pets/pet-form/pet-form.component';
+import { ServiceListComponent } from './components/services/service-list/service-list.component';
+import { ServiceFormComponent } from './components/services/service-form/service-form.component';
+import { ServiceDetailComponent } from './components/services/service-detail/service-detail.component';
 import { ShowcaseComponent } from './shared/components/showcase/showcase.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ClinicGuard } from './guards/clinic.guard';
@@ -44,6 +47,10 @@ export const routes: Routes = [
       { path: 'checkin', component: DashboardComponent }, // Check-in/out
       
       // Serviços
+      { path: 'services', component: ServiceListComponent }, // Lista de Serviços
+      { path: 'services/new', component: ServiceFormComponent }, // Novo Serviço
+      { path: 'services/:id', component: ServiceDetailComponent }, // Detalhes do Serviço
+      { path: 'services/:id/edit', component: ServiceFormComponent }, // Editar Serviço
       { path: 'grooming', component: DashboardComponent }, // Banho & Tosa
       { path: 'vet', component: DashboardComponent }, // Veterinário
       { path: 'inpatient', component: DashboardComponent }, // Internação

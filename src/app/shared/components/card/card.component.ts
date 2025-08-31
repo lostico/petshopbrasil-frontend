@@ -64,7 +64,6 @@ export class CardComponent {
     const variantClasses = {
       default: [
         'bg-white',
-        'border border-secondary-200',
         'shadow-sm'
       ],
       elevated: [
