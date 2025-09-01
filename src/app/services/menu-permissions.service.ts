@@ -25,6 +25,8 @@ export class MenuPermissionsService {
     { route: '/checkin', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
     
     // Serviços
+    { route: '/services', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
+    { route: '/services/new', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
     { route: '/grooming', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
     { route: '/vet', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
     { route: '/inpatient', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
