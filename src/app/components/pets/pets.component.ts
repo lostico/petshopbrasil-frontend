@@ -12,6 +12,7 @@ import { SelectComponent, SelectOption } from '../../shared/components/select/se
 import { CardComponent } from '../../shared/components/card/card.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
+import { PaginationComponent, PaginationConfig, PaginationChange } from '../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-pets',
@@ -26,7 +27,8 @@ import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
     SelectComponent,
     CardComponent,
     AlertComponent,
-    PhoneFormatPipe
+    PhoneFormatPipe,
+    PaginationComponent
   ],
   templateUrl: './pets.component.html',
   styleUrls: ['./pets.component.css']
@@ -40,6 +42,15 @@ export class PetsComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalItems = 0;
   itemsPerPage = 10;
+  
+  get paginationConfig(): PaginationConfig {
+    return {
+      currentPage: this.currentPage,
+      totalItems: this.totalItems,
+      itemsPerPage: this.itemsPerPage,
+      maxVisiblePages: 5
+    };
+  }
   
   // Modal state
   showDetailModal = false;
@@ -157,11 +168,10 @@ export class PetsComponent implements OnInit, OnDestroy {
     this.loadPets();
   }
 
-  onPageChange(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.loadPets();
-    }
+  onPageChange(change: PaginationChange): void {
+    this.currentPage = change.page;
+    this.itemsPerPage = change.itemsPerPage;
+    this.loadPets();
   }
 
   onEditPet(pet: Pet): void {

@@ -226,37 +226,13 @@
       </div>
     }
 
-    <!-- Pagination -->
-    @if (!loading && totalPages > 1) {
-      <div class="flex justify-center items-center gap-6 py-6 border-t border-secondary-200">
-        <app-button 
-          variant="secondary"
-          size="sm"
-          [disabled]="currentPage === 1"
-          (clicked)="onPageChange(currentPage - 1)"
-          icon="arrow-left"
-          label="Anterior">
-        </app-button>
-
-        <div class="flex flex-col items-center gap-1">
-          <span class="font-semibold text-secondary-700">
-            Página {{ currentPage }} de {{ totalPages }}
-          </span>
-          <span class="text-sm text-secondary-500">
-            {{ totalItems }} pet{{ totalItems !== 1 ? 's' : '' }} no total
-          </span>
-        </div>
-
-        <app-button 
-          variant="secondary"
-          size="sm"
-          [disabled]="currentPage === totalPages"
-          (clicked)="onPageChange(currentPage + 1)"
-          icon="arrow-right"
-          label="Próxima">
-        </app-button>
-      </div>
-    }
+    <!-- Paginação -->
+    <app-pagination
+      *ngIf="!loading && totalPages > 1"
+      [config]="paginationConfig"
+      (pageChange)="onPageChange($event)"
+      class="mt-6">
+    </app-pagination>
   </div>
 </div>
 

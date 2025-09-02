@@ -11,7 +11,11 @@ import {
   Check,
   X,
   Eye,
-  Settings
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -33,7 +37,11 @@ export const appConfig: ApplicationConfig = {
         Check,
         X,
         Eye,
-        Settings
+        Settings,
+        ChevronLeft,
+        ChevronRight,
+        ChevronsLeft,
+        ChevronsRight
       })
     )
   ]

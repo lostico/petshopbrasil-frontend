@@ -155,29 +155,11 @@
     </div>
 
     <!-- Paginação -->
-    <div *ngIf="totalPages > 1" class="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-      <div class="text-sm text-gray-700">
-        Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a {{ Math.min(currentPage * itemsPerPage, totalItems) }} de
-        {{ totalItems }} resultados
-      </div>
-
-      <div class="flex items-center space-x-2">
-        <app-button variant="outline" size="sm" label="Anterior" [disabled]="currentPage === 1"
-          (clicked)="onPageChange(currentPage - 1)">
-        </app-button>
-
-        <div class="flex items-center space-x-1">
-          <app-button *ngFor="let page of getPagesArray()" variant="outline" size="sm" [label]="page.toString()"
-            [class]="page === currentPage ? 'bg-blue-600 text-white border-blue-600' : ''"
-            (clicked)="onPageChange(page)">
-          </app-button>
-        </div>
-
-        <app-button variant="outline" size="sm" label="Próxima" [disabled]="currentPage === totalPages"
-          (clicked)="onPageChange(currentPage + 1)">
-        </app-button>
-      </div>
-    </div>
+    <app-pagination
+      [config]="paginationConfig"
+      (pageChange)="onPageChange($event)"
+      class="mt-4">
+    </app-pagination>
   </app-card>
 </div>
 

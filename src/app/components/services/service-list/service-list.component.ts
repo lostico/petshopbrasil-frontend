@@ -12,6 +12,7 @@ import { CardComponent } from '../../../shared/components/card/card.component';
 import { BadgeComponent } from '../../../shared/components/badge/badge.component';
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { PaginationComponent, PaginationConfig, PaginationChange } from '../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-service-list',
@@ -26,7 +27,8 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
     CardComponent,
     BadgeComponent,
     AlertComponent,
-    ModalComponent
+    ModalComponent,
+    PaginationComponent
   ],
   templateUrl: './service-list.component.html',
   styleUrls: ['./service-list.component.css']
@@ -46,6 +48,15 @@ export class ServiceListComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalItems = 0;
   itemsPerPage = 10;
+  
+  get paginationConfig(): PaginationConfig {
+    return {
+      currentPage: this.currentPage,
+      totalItems: this.totalItems,
+      itemsPerPage: this.itemsPerPage,
+      maxVisiblePages: 5
+    };
+  }
   
   // Modal de confirmação
   showDeleteModal = false;
@@ -148,8 +159,9 @@ export class ServiceListComponent implements OnInit, OnDestroy {
     this.loadServices();
   }
 
-  onPageChange(page: number): void {
-    this.currentPage = page;
+  onPageChange(change: PaginationChange): void {
+    this.currentPage = change.page;
+    this.itemsPerPage = change.itemsPerPage;
     this.loadServices();
   }
 
@@ -262,20 +274,7 @@ export class ServiceListComponent implements OnInit, OnDestroy {
     return isActive ? 'Ativo' : 'Inativo';
   }
 
-  getPagesArray(): number[] {
-    const pages: number[] = [];
-    const start = Math.max(1, this.currentPage - 2);
-    const end = Math.min(this.totalPages, this.currentPage + 2);
-    
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    
-    return pages;
-  }
 
-  // Propriedade Math para uso no template
-  Math = Math;
   
   // Propriedade ServiceCategory para uso no template
   ServiceCategory = ServiceCategory;
