@@ -12,6 +12,7 @@ import { CardComponent } from '../../../shared/components/card/card.component';
 import { BadgeComponent } from '../../../shared/components/badge/badge.component';
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { PaginationComponent, PaginationConfig } from '../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-service-list',
@@ -26,7 +27,8 @@ import { ModalComponent } from '../../../shared/components/modal/modal.component
     CardComponent,
     BadgeComponent,
     AlertComponent,
-    ModalComponent
+    ModalComponent,
+    PaginationComponent
   ],
   templateUrl: './service-list.component.html',
   styleUrls: ['./service-list.component.css']
@@ -46,6 +48,17 @@ export class ServiceListComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalItems = 0;
   itemsPerPage = 10;
+  
+  // Pagination config
+  paginationConfig: PaginationConfig = {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+    showInfo: true,
+    showPageNumbers: true,
+    maxVisiblePages: 5
+  };
   
   // Modal de confirmação
   showDeleteModal = false;
@@ -129,6 +142,16 @@ export class ServiceListComponent implements OnInit, OnDestroy {
           this.totalPages = response.pagination.pages;
           this.totalItems = response.pagination.total;
           this.currentPage = response.pagination.page;
+          
+          // Atualizar configuração da paginação
+          this.paginationConfig = {
+            ...this.paginationConfig,
+            currentPage: this.currentPage,
+            totalPages: this.totalPages,
+            totalItems: this.totalItems,
+            itemsPerPage: this.itemsPerPage
+          };
+          
           this.loading = false;
         },
         error: (error) => {
@@ -262,17 +285,6 @@ export class ServiceListComponent implements OnInit, OnDestroy {
     return isActive ? 'Ativo' : 'Inativo';
   }
 
-  getPagesArray(): number[] {
-    const pages: number[] = [];
-    const start = Math.max(1, this.currentPage - 2);
-    const end = Math.min(this.totalPages, this.currentPage + 2);
-    
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    
-    return pages;
-  }
 
   // Propriedade Math para uso no template
   Math = Math;

@@ -116,6 +116,9 @@
               "buildTarget": "petshopbrasil-frontend:build:hml"
             }
           },
+          "options": {
+            "port": 4300
+          },
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
@@ -142,5 +145,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }
