@@ -132,6 +132,7 @@ export class SelectComponent implements ControlValueAccessor {
   get selectClasses(): string {
     const baseClasses = [
       'block w-full rounded-md',
+      'bg-white',
       'border border-gray-300',
       'transition-colors duration-200',
       'focus:outline-none focus:ring-2 focus:ring-offset-0',

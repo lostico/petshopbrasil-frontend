@@ -28,9 +28,27 @@ export interface Clinic {
 export interface UserClinic {
   clinicId: string;
   clinicName: string;
+  cnpj: string;
   role: string;
   permissions: string[];
   isActive: boolean;
+}
+
+export interface UserNetwork {
+  networkId: string;
+  networkName: string;
+  cnpj: string;
+  description: string;
+  logo?: string;
+  website?: string;
+  role: string;
+  permissions: string[];
+  isActive: boolean;
+}
+
+export interface UserClinicsResponse {
+  associations: UserClinic[];
+  networks: UserNetwork[];
 }
 
 export interface SelectClinicRequest {
@@ -59,9 +77,9 @@ export class ClinicService {
     return this.http.get<Clinic>(ApiEndpoints.CLINICS.BY_ID(id));
   }
 
-  // Get user's associated clinics
-  getUserClinics(): Observable<UserClinic[]> {
-    return this.http.get<UserClinic[]>(ApiEndpoints.CLINICS.BY_USER);
+  // Get user's associated clinics and networks
+  getUserClinics(): Observable<UserClinicsResponse> {
+    return this.http.get<UserClinicsResponse>(ApiEndpoints.CLINICS.BY_USER);
   }
 
   // Select a clinic
