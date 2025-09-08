@@ -184,36 +184,12 @@
       </div>
     }
 
-    <!-- Pagination -->
-    @if (!loading && totalPages > 1) {
-      <div class="flex items-center justify-center gap-6 py-6 border-t border-secondary-200">
-        <app-button
-          label="Anterior"
-          icon="arrow-left"
-          variant="secondary"
-          size="sm"
-          [disabled]="currentPage === 1"
-          (clicked)="onPageChange(currentPage - 1)">
-        </app-button>
-
-        <div class="text-center">
-          <div class="text-sm font-medium text-secondary-700">
-            Página {{ currentPage }} de {{ totalPages }}
-          </div>
-          <div class="text-xs text-secondary-500">
-            {{ totalItems }} cliente{{ totalItems !== 1 ? 's' : '' }} no total
-          </div>
-        </div>
-
-        <app-button
-          label="Próxima"
-          icon="arrow-right"
-          variant="secondary"
-          size="sm"
-          [disabled]="currentPage === totalPages"
-          (clicked)="onPageChange(currentPage + 1)">
-        </app-button>
-      </div>
+    <!-- Pagination - Sempre visível -->
+    @if (!loading) {
+      <app-pagination
+        [config]="paginationConfig"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
     }
   </div>
 </div>

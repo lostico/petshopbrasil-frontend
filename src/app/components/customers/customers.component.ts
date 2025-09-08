@@ -11,6 +11,7 @@ import { InputComponent } from '../../shared/components/input/input.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
 import { CpfFormatPipe } from '../../shared/pipes/cpf-format.pipe';
 
@@ -29,6 +30,7 @@ import { CpfFormatPipe } from '../../shared/pipes/cpf-format.pipe';
     CardComponent,
     BadgeComponent,
     AlertComponent,
+    PaginationComponent,
     PhoneFormatPipe,
     CpfFormatPipe
   ],
@@ -44,6 +46,17 @@ export class CustomersComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalItems = 0;
   itemsPerPage = 10;
+  
+  // Pagination config
+  paginationConfig = {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+    showInfo: true,
+    showPageNumbers: true,
+    maxVisiblePages: 5
+  };
   
   // Modal state
   showStatusModal = false;
@@ -97,6 +110,16 @@ export class CustomersComponent implements OnInit, OnDestroy {
           this.customers = response.data;
           this.totalPages = response.pagination.pages;
           this.totalItems = response.pagination.total;
+          
+          // Atualizar configuração da paginação
+          this.paginationConfig = {
+            ...this.paginationConfig,
+            currentPage: this.currentPage,
+            totalPages: this.totalPages,
+            totalItems: this.totalItems,
+            itemsPerPage: this.itemsPerPage
+          };
+          
           this.loading = false;
         },
         error: (error) => {

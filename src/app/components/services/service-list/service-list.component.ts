@@ -140,6 +140,7 @@ export class ServiceListComponent implements OnInit, OnDestroy {
           this.totalPages = response.pagination.pages;
           this.totalItems = response.pagination.total;
           this.currentPage = response.pagination.page;
+          
           this.loading = false;
         },
         error: (error) => {
