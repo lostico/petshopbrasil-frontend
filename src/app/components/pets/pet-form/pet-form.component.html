@@ -14,16 +14,6 @@
       </app-button>
     </div>
 
-    <!-- Error Message -->
-    @if (error) {
-      <div class="mb-6">
-        <app-alert
-          variant="danger"
-          title="Erro"
-          [message]="error">
-        </app-alert>
-      </div>
-    }
 
     <!-- Form -->
     <form [formGroup]="petForm" (ngSubmit)="onSubmit()" [class.form-disabled]="loading">
@@ -175,8 +165,8 @@
                   </div>
                 </div>
               </div>
-            } @else if (!isEditMode && !selectedTutor && error) {
-              <!-- Mensagem de erro quando não há tutor válido -->
+            } @else if (!isEditMode && !selectedTutor) {
+              <!-- Mensagem quando não há tutor válido -->
               <div class="tutor-error-card">
                 <div class="tutor-error-content">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

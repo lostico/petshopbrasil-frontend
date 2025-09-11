@@ -10,7 +10,6 @@ import { InputComponent } from '../../../shared/components/input/input.component
 import { SelectComponent } from '../../../shared/components/select/select.component';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { BadgeComponent } from '../../../shared/components/badge/badge.component';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { PaginationComponent, PaginationConfig, PaginationChange } from '../../../shared/components/pagination/pagination.component';
 
@@ -26,7 +25,6 @@ import { PaginationComponent, PaginationConfig, PaginationChange } from '../../.
     SelectComponent,
     CardComponent,
     BadgeComponent,
-    AlertComponent,
     ModalComponent,
     PaginationComponent
   ],
@@ -36,7 +34,6 @@ import { PaginationComponent, PaginationConfig, PaginationChange } from '../../.
 export class ServiceListComponent implements OnInit, OnDestroy {
   services: Service[] = [];
   loading = false;
-  error = '';
   searchTerm = '';
   selectedCategory = '';
   selectedStatus = '';
@@ -120,7 +117,6 @@ export class ServiceListComponent implements OnInit, OnDestroy {
 
   loadServices(): void {
     this.loading = true;
-    this.error = '';
 
     const params: ServiceSearchParams = {
       page: this.currentPage,
@@ -144,7 +140,7 @@ export class ServiceListComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (error) => {
-          this.error = 'Erro ao carregar serviços. Tente novamente.';
+          this.toastService.showError('Erro ao carregar serviços. Tente novamente.');
           this.loading = false;
           console.error('Erro ao carregar serviços:', error);
         }
@@ -201,7 +197,6 @@ export class ServiceListComponent implements OnInit, OnDestroy {
           this.toastService.showStatusUpdate(serviceName, newStatus);
         },
         error: (error) => {
-          this.error = 'Erro ao atualizar status do serviço.';
           this.showStatusModal = false;
           this.serviceToToggle = null;
           
@@ -239,7 +234,6 @@ export class ServiceListComponent implements OnInit, OnDestroy {
           this.toastService.showServiceDeleted(serviceName);
         },
         error: (error) => {
-          this.error = 'Erro ao deletar serviço.';
           this.showDeleteModal = false;
           this.serviceToDelete = null;
           

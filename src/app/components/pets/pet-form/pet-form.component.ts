@@ -5,12 +5,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { PetService, Pet, PetSpecies, PetGender, CreatePetRequest, UpdatePetRequest } from '../../../services/pet.service';
 import { TutorService, Tutor } from '../../../services/tutor.service';
+import { ToastService } from '../../../shared/services/toast.service';
 import {
   ButtonComponent,
   InputComponent,
   SelectComponent,
-  CardComponent,
-  AlertComponent
+  CardComponent
 } from '../../../shared/components';
 
 @Component({
@@ -23,15 +23,13 @@ import {
     ButtonComponent,
     InputComponent,
     SelectComponent,
-    CardComponent,
-    AlertComponent
+    CardComponent
   ],
   templateUrl: './pet-form.component.html'
 })
 export class PetFormComponent implements OnInit, OnDestroy {
   petForm!: FormGroup;
   loading = false;
-  error = '';
   isEditMode = false;
   petId: string = '';
   selectedTutorId: string = '';
@@ -65,7 +63,8 @@ export class PetFormComponent implements OnInit, OnDestroy {
     private petService: PetService,
     private tutorService: TutorService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastService: ToastService
   ) {
     this.initForm();
   }
@@ -94,7 +93,7 @@ export class PetFormComponent implements OnInit, OnDestroy {
           this.petForm.get('tutorId')?.updateValueAndValidity();
         } else {
           // Se não há tutor, redirecionar para lista de pets
-          this.error = 'Tutor não informado. Não é possível cadastrar um pet sem um cliente válido.';
+          this.toastService.showError('Tutor não informado. Não é possível cadastrar um pet sem um cliente válido.');
           setTimeout(() => {
             this.router.navigate(['/crm/pets']);
           }, 3000);
@@ -156,9 +155,9 @@ export class PetFormComponent implements OnInit, OnDestroy {
           console.error('Erro ao carregar pet:', error);
           
           if (error.status === 404) {
-            this.error = 'Pet não encontrado';
+            this.toastService.showError('Pet não encontrado');
           } else {
-            this.error = 'Erro ao carregar dados do pet.';
+            this.toastService.showError('Erro ao carregar dados do pet.');
           }
           
           this.loading = false;
@@ -180,9 +179,9 @@ export class PetFormComponent implements OnInit, OnDestroy {
             console.error('Erro ao carregar informações do tutor:', error);
             
             if (error.status === 404) {
-              this.error = 'Cliente não encontrado. Não é possível cadastrar um pet sem um cliente válido.';
+              this.toastService.showError('Cliente não encontrado. Não é possível cadastrar um pet sem um cliente válido.');
             } else {
-              this.error = 'Erro ao carregar informações do cliente. Tente novamente.';
+              this.toastService.showError('Erro ao carregar informações do cliente. Tente novamente.');
             }
             
             // Limpar o tutorId inválido do formulário
@@ -201,21 +200,20 @@ export class PetFormComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.petForm.valid) {
       this.loading = true;
-      this.error = '';
 
       const formData = this.petForm.value;
       
       // Validação adicional para tutorId apenas em modo de criação
       if (!this.isEditMode) {
         if (!formData.tutorId || formData.tutorId.trim() === '') {
-          this.error = 'Selecione um tutor válido';
+          this.toastService.showError('Selecione um tutor válido');
           this.loading = false;
           return;
         }
 
         // Validar se o tutorId tem pelo menos 10 caracteres (CUID mínimo)
         if (formData.tutorId.trim().length < 10) {
-          this.error = 'ID do tutor inválido';
+          this.toastService.showError('ID do tutor inválido');
           this.loading = false;
           return;
         }
@@ -258,17 +256,18 @@ export class PetFormComponent implements OnInit, OnDestroy {
           .pipe(takeUntil(this.destroy$))
           .subscribe({
             next: () => {
+              this.toastService.showSuccess('Pet atualizado com sucesso!');
               this.router.navigate(['/crm/pets']);
             },
             error: (error: any) => {
               console.error('Erro ao atualizar pet:', error);
               
               if (error.status === 400) {
-                this.error = error.error?.message || 'Dados inválidos fornecidos';
+                this.toastService.showError(error.error?.message || 'Dados inválidos fornecidos');
               } else if (error.status === 404) {
-                this.error = 'Pet não encontrado';
+                this.toastService.showError('Pet não encontrado');
               } else {
-                this.error = 'Erro ao atualizar pet. Tente novamente.';
+                this.toastService.showError('Erro ao atualizar pet. Tente novamente.');
               }
               
               this.loading = false;
@@ -291,6 +290,7 @@ export class PetFormComponent implements OnInit, OnDestroy {
           .pipe(takeUntil(this.destroy$))
           .subscribe({
             next: () => {
+              this.toastService.showSuccess('Pet cadastrado com sucesso!');
               // Se veio de um tutor específico, voltar para a lista de pets desse tutor
               if (this.selectedTutorId) {
                 this.router.navigate(['/crm/pets'], { 
@@ -304,11 +304,11 @@ export class PetFormComponent implements OnInit, OnDestroy {
               console.error('Erro ao criar pet:', error);
               
               if (error.status === 400) {
-                this.error = error.error?.message || 'Dados inválidos fornecidos';
+                this.toastService.showError(error.error?.message || 'Dados inválidos fornecidos');
               } else if (error.status === 404) {
-                this.error = 'Tutor não encontrado';
+                this.toastService.showError('Tutor não encontrado');
               } else {
-                this.error = 'Erro ao criar pet. Tente novamente.';
+                this.toastService.showError('Erro ao criar pet. Tente novamente.');
               }
               
               this.loading = false;

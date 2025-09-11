@@ -26,16 +26,6 @@
       </app-input>
     </div>
 
-    <!-- Error Alert -->
-    @if (error) {
-      <div class="mb-6">
-        <app-alert
-          variant="danger"
-          title="Erro"
-          [message]="error">
-        </app-alert>
-      </div>
-    }
 
     <!-- Loading State -->
     @if (loading) {
@@ -185,7 +175,7 @@
     }
 
     <!-- Pagination - Sempre visível -->
-    @if (!loading) {
+    @if (!loading && customers.length > 0) {
       <app-pagination
         [config]="paginationConfig"
         (pageChange)="onPageChange($event)">

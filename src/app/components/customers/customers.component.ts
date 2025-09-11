@@ -4,14 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { TutorService, Tutor, TutorSearchParams } from '../../services/tutor.service';
+import { ToastService } from '../../shared/services/toast.service';
 import { StatusModalComponent } from './status-modal.component';
 import { CustomerDetailModalComponent } from './customer-detail-modal.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
-import { AlertComponent } from '../../shared/components/alert/alert.component';
-import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
+import { PaginationComponent, PaginationChange } from '../../shared/components/pagination/pagination.component';
 import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
 import { CpfFormatPipe } from '../../shared/pipes/cpf-format.pipe';
 
@@ -29,7 +29,6 @@ import { CpfFormatPipe } from '../../shared/pipes/cpf-format.pipe';
     InputComponent,
     CardComponent,
     BadgeComponent,
-    AlertComponent,
     PaginationComponent,
     PhoneFormatPipe,
     CpfFormatPipe
@@ -40,7 +39,6 @@ import { CpfFormatPipe } from '../../shared/pipes/cpf-format.pipe';
 export class CustomersComponent implements OnInit, OnDestroy {
   customers: Tutor[] = [];
   loading = false;
-  error = '';
   searchTerm = '';
   currentPage = 1;
   totalPages = 1;
@@ -68,7 +66,8 @@ export class CustomersComponent implements OnInit, OnDestroy {
 
   constructor(
     private tutorService: TutorService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {
     // Configurar debounce para busca
     this.searchSubject
@@ -95,7 +94,6 @@ export class CustomersComponent implements OnInit, OnDestroy {
 
   loadCustomers(): void {
     this.loading = true;
-    this.error = '';
 
     const params: TutorSearchParams = {
       page: this.currentPage,
@@ -124,7 +122,7 @@ export class CustomersComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Erro ao carregar clientes:', error);
-          this.error = 'Erro ao carregar lista de clientes. Tente novamente.';
+          this.toastService.showError('Erro ao carregar lista de clientes. Tente novamente.');
           this.loading = false;
         }
       });
@@ -135,11 +133,10 @@ export class CustomersComponent implements OnInit, OnDestroy {
     this.searchSubject.next(value);
   }
 
-  onPageChange(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.loadCustomers();
-    }
+  onPageChange(change: PaginationChange): void {
+    this.currentPage = change.page;
+    this.itemsPerPage = change.itemsPerPage;
+    this.loadCustomers();
   }
 
   onEditCustomer(customer: Tutor): void {
@@ -161,7 +158,7 @@ export class CustomersComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Erro ao desativar cliente:', error);
-            this.error = 'Erro ao desativar cliente. Tente novamente.';
+            this.toastService.showError('Erro ao desativar cliente. Tente novamente.');
           }
         });
     }
@@ -214,7 +211,7 @@ export class CustomersComponent implements OnInit, OnDestroy {
         break;
       case 'BLACKLISTED':
         if (!reason) {
-          this.error = 'Motivo é obrigatório para adicionar à lista negra';
+          this.toastService.showError('Motivo é obrigatório para adicionar à lista negra');
           return;
         }
         request$ = this.tutorService.blacklistTutor(this.selectedCustomer.id, reason);
@@ -231,10 +228,11 @@ export class CustomersComponent implements OnInit, OnDestroy {
         this.showStatusModal = false;
         this.selectedCustomer = null;
         this.loadCustomers();
+        this.toastService.showSuccess('Status do cliente atualizado com sucesso!');
       },
       error: (error) => {
         console.error('Erro ao alterar status do cliente:', error);
-        this.error = 'Erro ao alterar status do cliente. Tente novamente.';
+        this.toastService.showError('Erro ao alterar status do cliente. Tente novamente.');
       }
     });
   }

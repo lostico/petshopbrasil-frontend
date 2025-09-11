@@ -7,13 +7,6 @@
     </div>
   </div>
 
-  <!-- Erro -->
-  <app-alert 
-    *ngIf="error" 
-    type="error" 
-    [message]="error"
-    class="mb-6">
-  </app-alert>
 
   <!-- Conteúdo do Serviço -->
   <div *ngIf="!loading && service">

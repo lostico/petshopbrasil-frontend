@@ -4,12 +4,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TutorService, Tutor } from '../../../services/tutor.service';
+import { ToastService } from '../../../shared/services/toast.service';
 import {
   ButtonComponent,
   InputComponent,
   SelectComponent,
-  CardComponent,
-  AlertComponent
+  CardComponent
 } from '../../../shared/components';
 
 
@@ -22,8 +22,7 @@ import {
     ButtonComponent,
     InputComponent,
     SelectComponent,
-    CardComponent,
-    AlertComponent
+    CardComponent
   ],
   templateUrl: './customer-form.component.html',
   styleUrls: ['./customer-form.component.css']
@@ -31,7 +30,6 @@ import {
 export class CustomerFormComponent implements OnInit, OnDestroy {
   customerForm: FormGroup;
   loading = false;
-  error = '';
   success = false;
   isEditMode = false;
   customerId: string | null = null;
@@ -42,7 +40,8 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private tutorService: TutorService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastService: ToastService
   ) {
     this.customerForm = this.fb.group({
       cpf: ['', [Validators.required, this.cpfValidator()]],
@@ -99,7 +98,7 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Erro ao carregar dados do cliente:', error);
-          this.error = 'Erro ao carregar dados do cliente.';
+          this.toastService.showError('Erro ao carregar dados do cliente.');
           this.loading = false;
           this.customerForm.enable();
         }
@@ -182,7 +181,6 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.customerForm.valid && !this.loading) {
       this.loading = true;
-      this.error = '';
       this.success = false;
       this.customerForm.disable();
 
@@ -209,6 +207,7 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
             next: (response) => {
               this.loading = false;
               this.success = true;
+              this.toastService.showSuccess('Cliente atualizado com sucesso!');
               
               // Redirecionar após 2 segundos
               setTimeout(() => {
@@ -221,9 +220,9 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
               console.error('Erro ao atualizar cliente:', error);
               
               if (error.error?.message) {
-                this.error = error.error.message;
+                this.toastService.showError(error.error.message);
               } else {
-                this.error = 'Erro ao atualizar cliente. Tente novamente.';
+                this.toastService.showError('Erro ao atualizar cliente. Tente novamente.');
               }
             }
           });
@@ -236,6 +235,7 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
               this.loading = false;
               this.success = true;
               this.customerForm.reset();
+              this.toastService.showSuccess('Cliente cadastrado com sucesso!');
               
               // Redirecionar após 2 segundos
               setTimeout(() => {
@@ -248,9 +248,9 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
               console.error('Erro ao criar cliente:', error);
               
               if (error.error?.message) {
-                this.error = error.error.message;
+                this.toastService.showError(error.error.message);
               } else {
-                this.error = 'Erro ao criar cliente. Tente novamente.';
+                this.toastService.showError('Erro ao criar cliente. Tente novamente.');
               }
             }
           });

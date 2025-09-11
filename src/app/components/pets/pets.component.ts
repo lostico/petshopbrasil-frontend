@@ -4,13 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { PetService, Pet, PetSearchParams, PetSpecies, PetGender, PetStatus } from '../../services/pet.service';
+import { ToastService } from '../../shared/services/toast.service';
 import { PetDetailModalComponent } from './pet-detail-modal.component';
 import { PetStatusModalComponent } from './pet-status-modal.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { SelectComponent, SelectOption } from '../../shared/components/select/select.component';
 import { CardComponent } from '../../shared/components/card/card.component';
-import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
 import { PaginationComponent, PaginationConfig, PaginationChange } from '../../shared/components/pagination/pagination.component';
 
@@ -26,7 +26,6 @@ import { PaginationComponent, PaginationConfig, PaginationChange } from '../../s
     InputComponent,
     SelectComponent,
     CardComponent,
-    AlertComponent,
     PhoneFormatPipe,
     PaginationComponent
   ],
@@ -36,7 +35,6 @@ import { PaginationComponent, PaginationConfig, PaginationChange } from '../../s
 export class PetsComponent implements OnInit, OnDestroy {
   pets: Pet[] = [];
   loading = false;
-  error = '';
   searchTerm = '';
   currentPage = 1;
   totalPages = 1;
@@ -87,7 +85,8 @@ export class PetsComponent implements OnInit, OnDestroy {
   constructor(
     private petService: PetService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastService: ToastService
   ) {
     // Configurar debounce para busca
     this.searchSubject
@@ -121,7 +120,6 @@ export class PetsComponent implements OnInit, OnDestroy {
 
   loadPets(): void {
     this.loading = true;
-    this.error = '';
 
     const params: PetSearchParams = {
       page: this.currentPage,
@@ -143,7 +141,7 @@ export class PetsComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Erro ao carregar pets:', error);
-          this.error = 'Erro ao carregar lista de pets. Tente novamente.';
+          this.toastService.showError('Erro ao carregar lista de pets. Tente novamente.');
           this.loading = false;
         }
       });
@@ -223,10 +221,11 @@ export class PetsComponent implements OnInit, OnDestroy {
           
           this.showStatusModal = false;
           this.selectedPet = null;
+          this.toastService.showSuccess('Status do pet atualizado com sucesso!');
         },
         error: (error) => {
           console.error('Erro ao atualizar status do pet:', error);
-          this.error = 'Erro ao atualizar status do pet. Tente novamente.';
+          this.toastService.showError('Erro ao atualizar status do pet. Tente novamente.');
         }
       });
   }
@@ -237,10 +236,7 @@ export class PetsComponent implements OnInit, OnDestroy {
       this.router.navigate(['/crm/pets/new', this.selectedTutorId]);
     } else {
       // Se não há tutor selecionado, mostrar mensagem de erro
-      this.error = 'Selecione um cliente para adicionar um pet.';
-      setTimeout(() => {
-        this.error = '';
-      }, 3000);
+      this.toastService.showError('Selecione um cliente para adicionar um pet.');
     }
   }
 

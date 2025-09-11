@@ -28,15 +28,8 @@
   <div *ngIf="!loading">
     <!-- Alert de erro -->
     <div class="mb-4">
-      <app-alert *ngIf="error" type="error" [message]="error" class="mb-6">
-      </app-alert>
     </div>
 
-    <!-- Alert de sucesso -->
-    <div class="mb-4">
-      <app-alert *ngIf="success" type="success" [message]="success" class="mb-6">
-      </app-alert>
-    </div>
 
     <form [formGroup]="serviceForm" (ngSubmit)="onSubmit()" class="space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">

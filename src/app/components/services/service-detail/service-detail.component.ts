@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ServiceService, Service, ServiceCategory } from '../../../services/service.service';
+import { ToastService } from '../../../shared/services/toast.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { BadgeComponent } from '../../../shared/components/badge/badge.component';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-service-detail',
@@ -15,8 +15,7 @@ import { AlertComponent } from '../../../shared/components/alert/alert.component
     CommonModule,
     ButtonComponent,
     CardComponent,
-    BadgeComponent,
-    AlertComponent
+    BadgeComponent
   ],
   templateUrl: './service-detail.component.html',
   styleUrls: ['./service-detail.component.css']
@@ -24,14 +23,14 @@ import { AlertComponent } from '../../../shared/components/alert/alert.component
 export class ServiceDetailComponent implements OnInit, OnDestroy {
   service: Service | null = null;
   loading = false;
-  error = '';
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private serviceService: ServiceService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -47,12 +46,11 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     const serviceId = this.route.snapshot.paramMap.get('id');
     
     if (!serviceId) {
-      this.error = 'ID do serviço não fornecido';
+      this.toastService.showError('ID do serviço não fornecido');
       return;
     }
 
     this.loading = true;
-    this.error = '';
 
     this.serviceService.getServiceById(serviceId)
       .pipe(takeUntil(this.destroy$))
@@ -62,7 +60,7 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (error) => {
-          this.error = 'Erro ao carregar serviço. Tente novamente.';
+          this.toastService.showError('Erro ao carregar serviço. Tente novamente.');
           this.loading = false;
           console.error('Erro ao carregar serviço:', error);
         }
@@ -90,10 +88,11 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
         next: () => {
           if (this.service) {
             this.service.isActive = newStatus;
+            this.toastService.showStatusUpdate(this.service.name, newStatus);
           }
         },
         error: (error) => {
-          this.error = 'Erro ao atualizar status do serviço.';
+          this.toastService.showError('Erro ao atualizar status do serviço.');
           console.error('Erro ao atualizar status:', error);
         }
       });

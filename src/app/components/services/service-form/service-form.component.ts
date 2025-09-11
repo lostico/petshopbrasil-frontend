@@ -4,12 +4,12 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ServiceService, Service, ServiceCategory, CreateServiceRequest, UpdateServiceRequest } from '../../../services/service.service';
+import { ToastService } from '../../../shared/services/toast.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { InputComponent } from '../../../shared/components/input/input.component';
 import { TextareaComponent } from '../../../shared/components/textarea/textarea.component';
 import { SelectComponent } from '../../../shared/components/select/select.component';
 import { CardComponent } from '../../../shared/components/card/card.component';
-import { AlertComponent } from '../../../shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-service-form',
@@ -21,8 +21,7 @@ import { AlertComponent } from '../../../shared/components/alert/alert.component
     InputComponent,
     TextareaComponent,
     SelectComponent,
-    CardComponent,
-    AlertComponent
+    CardComponent
   ],
   templateUrl: './service-form.component.html',
   styleUrls: ['./service-form.component.css']
@@ -31,8 +30,6 @@ export class ServiceFormComponent implements OnInit, OnDestroy {
   serviceForm!: FormGroup;
   loading = false;
   submitting = false;
-  error = '';
-  success = '';
   isEditMode = false;
   serviceId: string | null = null;
   service: Service | null = null;
@@ -54,7 +51,8 @@ export class ServiceFormComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private serviceService: ServiceService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -91,7 +89,6 @@ export class ServiceFormComponent implements OnInit, OnDestroy {
     if (!this.serviceId) return;
 
     this.loading = true;
-    this.error = '';
 
     this.serviceService.getServiceById(this.serviceId)
       .pipe(takeUntil(this.destroy$))
@@ -102,7 +99,7 @@ export class ServiceFormComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (error) => {
-          this.error = 'Erro ao carregar serviço. Tente novamente.';
+          this.toastService.showError('Erro ao carregar serviço. Tente novamente.');
           this.loading = false;
           console.error('Erro ao carregar serviço:', error);
         }
@@ -129,8 +126,6 @@ export class ServiceFormComponent implements OnInit, OnDestroy {
     }
 
     this.submitting = true;
-    this.error = '';
-    this.success = '';
 
     const formValue = this.serviceForm.value;
 
@@ -146,7 +141,7 @@ export class ServiceFormComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.success = 'Serviço criado com sucesso!';
+          this.toastService.showSuccess('Serviço criado com sucesso!');
           this.submitting = false;
           
           // Redirecionar após 2 segundos
@@ -167,7 +162,7 @@ export class ServiceFormComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.success = 'Serviço atualizado com sucesso!';
+          this.toastService.showSuccess('Serviço atualizado com sucesso!');
           this.submitting = false;
           
           // Redirecionar após 2 segundos
@@ -185,11 +180,11 @@ export class ServiceFormComponent implements OnInit, OnDestroy {
     this.submitting = false;
     
     if (error.error?.message) {
-      this.error = error.error.message;
+      this.toastService.showError(error.error.message);
     } else if (error.error?.errors && Array.isArray(error.error.errors)) {
-      this.error = error.error.errors.map((e: any) => e.message).join(', ');
+      this.toastService.showError(error.error.errors.map((e: any) => e.message).join(', '));
     } else {
-      this.error = defaultMessage;
+      this.toastService.showError(defaultMessage);
     }
     
     console.error('Erro na operação:', error);

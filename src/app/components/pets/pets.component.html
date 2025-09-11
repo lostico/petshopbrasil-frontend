@@ -6,12 +6,12 @@
         <h1 class="text-3xl font-bold text-secondary-900 mb-2">Pets</h1>
         <p class="text-secondary-600">Gerencie os pets da sua clínica</p>
       </div>
-      <app-button 
+      <!-- <app-button 
         label="Novo Pet"
         variant="primary"
         (clicked)="onAddPet()"
         icon="plus">
-      </app-button>
+      </app-button> -->
     </div>
 
     <!-- Search and Filters -->
@@ -42,14 +42,6 @@
       </app-select>
     </div>
 
-    <!-- Error Message -->
-    @if (error) {
-      <app-alert 
-        type="error"
-        [message]="error"
-        class="mb-6">
-      </app-alert>
-    }
 
     <!-- Loading -->
     @if (loading) {
@@ -218,21 +210,22 @@
         @if (!searchTerm && !selectedSpecies && !selectedGender) {
           <p class="mb-6">Comece cadastrando seu primeiro pet.</p>
         }
-        <app-button 
+        <!-- <app-button 
           label="Cadastrar Primeiro Pet"
           variant="primary"
           (clicked)="onAddPet()">
-        </app-button>
+        </app-button> -->
       </div>
     }
 
     <!-- Paginação -->
-    <app-pagination
-      *ngIf="!loading && totalPages > 1"
-      [config]="paginationConfig"
-      (pageChange)="onPageChange($event)"
-      class="mt-6">
-    </app-pagination>
+    @if (!loading && pets.length > 0) {
+      <app-pagination
+        [config]="paginationConfig"
+        (pageChange)="onPageChange($event)"
+        class="mt-6">
+      </app-pagination>
+    }
   </div>
 </div>
 
