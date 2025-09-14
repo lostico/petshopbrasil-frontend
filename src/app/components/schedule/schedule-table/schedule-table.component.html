@@ -1,0 +1,191 @@
+<app-card variant="elevated" class="overflow-hidden">
+  @if (appointments.length > 0) {
+    <!-- Desktop Table View -->
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-secondary-50 border-b border-secondary-200">
+          <tr>
+            @for (header of getTableHeaders(); track header) {
+              <th 
+                [class]="header === 'Ações' ? 'text-right' : 'text-left'"
+                class="px-6 py-3 text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                {{ header }}
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-secondary-200">
+          @for (appointment of appointments; track appointment.id) {
+            <tr class="hover:bg-secondary-50 transition-colors">
+              <!-- Hora -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-secondary-900">{{ appointment.time }}</div>
+              </td>
+              
+              <!-- Tutor/Pet -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-secondary-900">{{ appointment.tutorName }}</div>
+                <div class="text-sm text-secondary-500">{{ appointment.petName }}</div>
+              </td>
+              
+              <!-- Serviço -->
+              <td class="px-6 py-4">
+                <div class="text-sm text-secondary-900">{{ appointment.service }}</div>
+                @if (appointment.professional) {
+                  <div class="text-sm text-secondary-500">{{ appointment.professional }}</div>
+                }
+              </td>
+              
+              <!-- Plano/Convênio (apenas para veterinário) -->
+              @if (category === 'veterinary') {
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-secondary-900">{{ appointment.plan || 'Particular' }}</div>
+                </td>
+              }
+              
+              <!-- Status -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <app-badge 
+                  [text]="getStatusLabel(appointment.status)"
+                  [variant]="getStatusVariant(appointment.status)"
+                  size="sm">
+                </app-badge>
+              </td>
+              
+              <!-- Ações -->
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end gap-1">
+                  <app-button
+                    variant="ghost"
+                    icon="eye"
+                    size="sm"
+                    (clicked)="onActionClick('view', appointment)"
+                    title="Visualizar">
+                  </app-button>
+                  <app-button
+                    variant="ghost"
+                    icon="edit"
+                    size="sm"
+                    (clicked)="onActionClick('edit', appointment)"
+                    title="Editar">
+                  </app-button>
+                  <app-button
+                    variant="ghost"
+                    icon="check"
+                    size="sm"
+                    (clicked)="onActionClick('checkin', appointment)"
+                    title="Check-in">
+                  </app-button>
+                  <app-button
+                    variant="ghost"
+                    icon="cog"
+                    size="sm"
+                    (clicked)="onActionClick('more', appointment)"
+                    title="Mais opções">
+                  </app-button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div class="md:hidden space-y-4 p-4">
+      @for (appointment of appointments; track appointment.id) {
+        <div class="bg-secondary-50 rounded-lg p-4 border border-secondary-200">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+                <span class="text-sm font-semibold text-primary-600">{{ appointment.time }}</span>
+              </div>
+              <div>
+                <div class="font-medium text-secondary-900">{{ appointment.tutorName }}</div>
+                <div class="text-sm text-secondary-500">{{ appointment.petName }}</div>
+              </div>
+            </div>
+            <app-badge 
+              [text]="getStatusLabel(appointment.status)"
+              [variant]="getStatusVariant(appointment.status)"
+              size="sm">
+            </app-badge>
+          </div>
+          
+          <!-- Service Info -->
+          <div class="mb-3">
+            <div class="text-sm font-medium text-secondary-900">{{ appointment.service }}</div>
+            @if (appointment.professional) {
+              <div class="text-sm text-secondary-500">{{ appointment.professional }}</div>
+            }
+            @if (category === 'veterinary' && appointment.plan) {
+              <div class="text-sm text-secondary-500">{{ appointment.plan }}</div>
+            }
+          </div>
+          
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-2 pt-3 border-t border-secondary-200">
+            <app-button
+              variant="ghost"
+              icon="eye"
+              size="sm"
+              (clicked)="onActionClick('view', appointment)"
+              title="Visualizar">
+            </app-button>
+            <app-button
+              variant="ghost"
+              icon="edit"
+              size="sm"
+              (clicked)="onActionClick('edit', appointment)"
+              title="Editar">
+            </app-button>
+            <app-button
+              variant="ghost"
+              icon="check"
+              size="sm"
+              (clicked)="onActionClick('checkin', appointment)"
+              title="Check-in">
+            </app-button>
+            <app-button
+              variant="ghost"
+              icon="cog"
+              size="sm"
+              (clicked)="onActionClick('more', appointment)"
+              title="Mais opções">
+            </app-button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (appointments.length === 0) {
+    <!-- Empty State -->
+    <div class="text-center py-16">
+      <div class="w-16 h-16 mx-auto mb-4 text-secondary-300">
+        @if (category === 'grooming') {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M9 12l2 2 4-4"/>
+            <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
+            <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
+            <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/>
+            <path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3"/>
+          </svg>
+        }
+      </div>
+      <h3 class="text-xl font-semibold text-secondary-700 mb-2">
+        @if (category === 'grooming') {
+          Nenhum agendamento de banho e tosa
+        } @else {
+          Nenhum agendamento veterinário
+        }
+      </h3>
+      <p class="text-secondary-500 mb-6">{{ getEmptyStateMessage() }}</p>
+    </div>
+  }
+</app-card>

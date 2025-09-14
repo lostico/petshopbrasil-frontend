@@ -1,0 +1,113 @@
+@reference "../../../../styles.css";
+/* Schedule Table Component Styles */
+.schedule-table {
+  @apply overflow-hidden;
+}
+
+.table-container {
+  @apply overflow-x-auto;
+}
+
+.schedule-table table {
+  @apply w-full;
+}
+
+.schedule-table thead {
+  @apply bg-secondary-50 border-b border-secondary-200;
+}
+
+.schedule-table th {
+  @apply px-6 py-3 text-xs font-medium text-secondary-500 uppercase tracking-wider;
+}
+
+.schedule-table th.text-right {
+  @apply text-right;
+}
+
+.schedule-table th.text-left {
+  @apply text-left;
+}
+
+.schedule-table tbody {
+  @apply bg-white divide-y divide-secondary-200;
+}
+
+.schedule-table tr {
+  @apply hover:bg-secondary-50 transition-colors;
+}
+
+.schedule-table td {
+  @apply px-6 py-4 whitespace-nowrap;
+}
+
+.schedule-table td:not(.whitespace-nowrap) {
+  @apply whitespace-normal;
+}
+
+/* Mobile Card Styles */
+.mobile-cards {
+  @apply space-y-4 p-4;
+}
+
+.mobile-card {
+  @apply bg-secondary-50 rounded-lg p-4 border border-secondary-200;
+}
+
+.mobile-card-header {
+  @apply flex items-center justify-between mb-3;
+}
+
+.mobile-card-time {
+  @apply w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center;
+}
+
+.mobile-card-time span {
+  @apply text-sm font-semibold text-primary-600;
+}
+
+.mobile-card-info {
+  @apply mb-3;
+}
+
+.mobile-card-actions {
+  @apply flex items-center justify-end gap-2 pt-3 border-t border-secondary-200;
+}
+
+/* Empty State */
+.empty-state {
+  @apply text-center py-16;
+}
+
+.empty-state-icon {
+  @apply w-16 h-16 mx-auto mb-4 text-secondary-300;
+}
+
+.empty-state-title {
+  @apply text-xl font-semibold text-secondary-700 mb-2;
+}
+
+.empty-state-description {
+  @apply text-secondary-500 mb-6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .schedule-table {
+    @apply hidden;
+  }
+  
+  .mobile-cards {
+    @apply block;
+  }
+}
+
+@media (min-width: 769px) {
+  .schedule-table {
+    @apply block;
+  }
+  
+  .mobile-cards {
+    @apply hidden;
+  }
+}
+

@@ -1,0 +1,64 @@
+@reference "../../../styles.css";
+/* Schedule Component Styles */
+.schedule-filters {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  border: 1px solid #e2e8f0;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.view-switcher {
+  @apply flex items-center gap-2 mb-6;
+}
+
+.view-switcher button {
+  @apply px-3 py-1.5 text-sm font-medium rounded-md transition-colors;
+}
+
+.view-switcher button.active {
+  background-color: white;
+  color: #2563eb;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.view-switcher button:not(.active) {
+  color: #475569;
+}
+
+.view-switcher button:not(.active):hover {
+  color: #0f172a;
+}
+
+.section-header {
+  @apply flex items-center gap-3 mb-4;
+}
+
+.section-icon {
+  @apply w-8 h-8 rounded-lg flex items-center justify-center;
+}
+
+.section-icon.grooming {
+  @apply bg-primary-100 text-primary-600;
+}
+
+.section-icon.veterinary {
+  @apply bg-green-100 text-green-600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .schedule-filters {
+    @apply p-4;
+  }
+  
+  .view-switcher {
+    @apply flex-col items-start gap-3;
+  }
+  
+  .view-switcher > div {
+    @apply w-full;
+  }
+}
+

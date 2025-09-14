@@ -10,6 +10,7 @@ import { PetFormComponent } from './components/pets/pet-form/pet-form.component'
 import { ServiceListComponent } from './components/services/service-list/service-list.component';
 import { ServiceFormComponent } from './components/services/service-form/service-form.component';
 import { ServiceDetailComponent } from './components/services/service-detail/service-detail.component';
+import { ScheduleComponent } from './components/schedule/schedule.component';
 import { ShowcaseComponent } from './shared/components/showcase/showcase.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ClinicGuard } from './guards/clinic.guard';
@@ -30,10 +31,10 @@ export const routes: Routes = [
     children: [
       // Dashboard
       { path: 'dashboard', component: DashboardComponent },
-      
+
       // Design System Showcase
       { path: 'showcase', component: ShowcaseComponent },
-      
+
       // Vendas & Atendimento
       { path: 'pos', component: DashboardComponent }, // PDV
       { path: 'orders', component: DashboardComponent }, // Pedidos
@@ -43,9 +44,9 @@ export const routes: Routes = [
       { path: 'crm/pets', component: PetsComponent }, // Pets
       { path: 'crm/pets/new/:idTutor', component: PetFormComponent }, // Novo Pet com tutor específico
       { path: 'crm/pets/edit/:id', component: PetFormComponent }, // Editar Pet
-      { path: 'schedule', component: DashboardComponent }, // Agendamentos
+      { path: 'schedule', component: ScheduleComponent }, // Agendamentos
       { path: 'checkin', component: DashboardComponent }, // Check-in/out
-      
+
       // Serviços
       { path: 'services', component: ServiceListComponent }, // Lista de Serviços
       { path: 'services/new', component: ServiceFormComponent }, // Novo Serviço
@@ -55,26 +56,26 @@ export const routes: Routes = [
       { path: 'vet', component: DashboardComponent }, // Veterinário
       { path: 'inpatient', component: DashboardComponent }, // Internação
       { path: 'hotel', component: DashboardComponent }, // Hotel
-      
+
       // Produtos & Estoque
       { path: 'catalog', component: DashboardComponent }, // Catálogo
       { path: 'inventory', component: DashboardComponent }, // Estoque
       { path: 'purchasing', component: DashboardComponent }, // Compras
-      
+
       // Financeiro
       { path: 'finance/cash', component: DashboardComponent }, // Caixa
       { path: 'finance/receivables', component: DashboardComponent }, // Recebíveis
       { path: 'finance/payables', component: DashboardComponent }, // Pagamentos
-      
+
       // Relatórios
       { path: 'reports', component: DashboardComponent }, // Relatórios Gerais
-      
-                   // Configurações
-             { path: 'settings/org', component: DashboardComponent }, // Empresa
-             { path: 'settings/users', component: DashboardComponent }, // Usuários
-             { path: 'settings/schedule', component: DashboardComponent }, // Agenda
-             { path: 'settings/permissions', component: DashboardComponent }, // Permissões
-      
+
+      // Configurações
+      { path: 'settings/org', component: DashboardComponent }, // Empresa
+      { path: 'settings/users', component: DashboardComponent }, // Usuários
+      { path: 'settings/schedule', component: DashboardComponent }, // Agenda
+      { path: 'settings/permissions', component: DashboardComponent }, // Permissões
+
       // Default redirect
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]

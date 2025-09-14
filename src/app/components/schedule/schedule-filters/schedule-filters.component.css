@@ -1,0 +1,29 @@
+@reference "../../../../styles.css";
+/* Schedule Filters Component Styles */
+.schedule-filters {
+  @apply bg-white rounded-lg shadow-sm border border-secondary-200 p-6 mb-6;
+}
+
+.filter-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4;
+}
+
+.filter-group {
+  @apply space-y-2;
+}
+
+.filter-label {
+  @apply block text-sm font-medium text-secondary-700 mb-2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .schedule-filters {
+    @apply p-4;
+  }
+  
+  .filter-grid {
+    @apply grid-cols-1 gap-3;
+  }
+}
+

@@ -1,0 +1,47 @@
+<div class="bg-white rounded-lg shadow-sm border border-secondary-200 p-6 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Período -->
+    <div>
+      <app-select
+        label="Período"
+        [options]="periodOptions"
+        [(ngModel)]="filters.period"
+        (ngModelChange)="onFilterChange('period', $event)"
+        placeholder="Selecione o período">
+      </app-select>
+    </div>
+
+    <!-- Categoria -->
+    <div>
+      <app-select
+        label="Categoria"
+        [options]="categoryOptions"
+        [(ngModel)]="filters.category"
+        (ngModelChange)="onFilterChange('category', $event)"
+        placeholder="Selecione a categoria">
+      </app-select>
+    </div>
+
+    <!-- Agenda/Profissional -->
+    <div>
+      <app-select
+        label="Agenda/Profissional"
+        [options]="getProfessionalOptions()"
+        [(ngModel)]="filters.professional"
+        (ngModelChange)="onFilterChange('professional', $event)"
+        placeholder="Selecione o profissional">
+      </app-select>
+    </div>
+
+    <!-- Status -->
+    <div>
+      <app-select
+        label="Status"
+        [options]="statusOptions"
+        [(ngModel)]="filters.status"
+        (ngModelChange)="onFilterChange('status', $event)"
+        placeholder="Selecione o status">
+      </app-select>
+    </div>
+  </div>
+</div>
