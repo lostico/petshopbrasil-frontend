@@ -37,7 +37,6 @@ export const routes: Routes = [
 
       // Vendas & Atendimento
       { path: 'pos', component: DashboardComponent }, // PDV
-      { path: 'orders', component: DashboardComponent }, // Pedidos
       { path: 'crm/customers', component: CustomersComponent }, // Clientes
       { path: 'crm/customers/new', component: CustomerFormComponent }, // Novo Cliente
       { path: 'crm/customers/edit/:id', component: CustomerFormComponent }, // Editar Cliente

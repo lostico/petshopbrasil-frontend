@@ -107,7 +107,6 @@ export class BreadcrumbComponent implements OnInit {
     const routeLabels: { [key: string]: string } = {
       'dashboard': 'Dashboard',
       'pos': 'PDV',
-      'orders': 'Pedidos',
       'crm': 'CRM',
       'customers': 'Clientes',
       'pets': 'Pets',

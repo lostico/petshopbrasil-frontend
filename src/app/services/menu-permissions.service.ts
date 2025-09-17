@@ -18,7 +18,6 @@ export class MenuPermissionsService {
     
     // Vendas & Atendimento
     { route: '/pos', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
-    { route: '/orders', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
     { route: '/crm/customers', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET', 'STAFF'] },
     { route: '/crm/pets', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET', 'STAFF'] },
     { route: '/schedule', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET', 'STAFF'] },
