@@ -1,4 +1,4 @@
-<div class="container mx-auto px-4 py-6">
+<app-page-container>
   <!-- Loading -->
   <div *ngIf="loading" class="flex items-center justify-center py-12">
     <div class="text-center">
@@ -7,32 +7,25 @@
     </div>
   </div>
 
-
   <!-- Conteúdo do Serviço -->
   <div *ngIf="!loading && service">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">{{ service.name }}</h1>
-        <p class="text-gray-600 mt-1">Detalhes do serviço</p>
-      </div>
-      <div class="flex items-center space-x-3">
-        <app-button
-          variant="secondary"
-          size="md"
-          icon="arrow-left"
-          label="Voltar"
-          (clicked)="onBack()">
-        </app-button>
-        <app-button
-          variant="primary"
-          size="md"
-          icon="edit"
-          label="Editar"
-          (clicked)="onEdit()">
-        </app-button>
-      </div>
-    </div>
+    <app-page-header
+      [title]="service.name"
+      subtitle="Detalhes do serviço"
+      [action]="{
+        label: 'Voltar',
+        icon: 'arrow-left',
+        variant: 'secondary'
+      }"
+      [secondaryAction]="{
+        label: 'Editar',
+        icon: 'edit',
+        variant: 'primary'
+      }"
+      (actionClick)="onBack()"
+      (secondaryActionClick)="onEdit()">
+    </app-page-header>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Informações Principais -->
@@ -201,4 +194,5 @@
       </div>
     </div>
   </div>
-</div>
+  </div>
+</app-page-container>

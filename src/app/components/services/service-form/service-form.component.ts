@@ -10,6 +10,8 @@ import { InputComponent } from '../../../shared/components/input/input.component
 import { TextareaComponent } from '../../../shared/components/textarea/textarea.component';
 import { SelectComponent } from '../../../shared/components/select/select.component';
 import { CardComponent } from '../../../shared/components/card/card.component';
+import { PageContainerComponent } from '../../../shared/components/page-container/page-container.component';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-service-form',
@@ -21,7 +23,9 @@ import { CardComponent } from '../../../shared/components/card/card.component';
     InputComponent,
     TextareaComponent,
     SelectComponent,
-    CardComponent
+    CardComponent,
+    PageContainerComponent,
+    PageHeaderComponent
   ],
   templateUrl: './service-form.component.html',
   styleUrls: ['./service-form.component.css']

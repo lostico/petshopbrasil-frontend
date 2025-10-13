@@ -9,7 +9,8 @@ import {
   ButtonComponent,
   InputComponent,
   SelectComponent,
-  CardComponent
+  CardComponent,
+  PageLayoutComponent
 } from '../../../shared/components';
 
 
@@ -22,7 +23,8 @@ import {
     ButtonComponent,
     InputComponent,
     SelectComponent,
-    CardComponent
+    CardComponent,
+    PageLayoutComponent
   ],
   templateUrl: './customer-form.component.html',
   styleUrls: ['./customer-form.component.css']

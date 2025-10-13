@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
+import { PageContainerComponent } from '../../shared/components/page-container/page-container.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 
 // Schedule Components
 import { ScheduleFiltersComponent } from './schedule-filters/schedule-filters.component';
@@ -32,6 +34,8 @@ export interface ScheduleAppointment {
     ButtonComponent,
     CardComponent,
     BadgeComponent,
+    PageContainerComponent,
+    PageHeaderComponent,
     ScheduleFiltersComponent,
     ScheduleTableComponent
   ],

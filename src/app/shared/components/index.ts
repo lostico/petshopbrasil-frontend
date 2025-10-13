@@ -11,6 +11,9 @@ export * from './highlight-card/highlight-card.component';
 export * from './toast/toast.component';
 export * from './toast/toast-container.component';
 export * from './pagination/pagination.component';
+export * from './page-header/page-header.component';
+export * from './page-container/page-container.component';
+export * from './page-layout/page-layout.component';
 
 // Types
 export type { ButtonVariant, ButtonSize } from './button/button.component';
@@ -23,4 +26,5 @@ export type { AlertVariant, AlertSize } from './alert/alert.component';
 export type { ModalConfig, ModalAction } from './modal/modal.component';
 export type { ToastVariant, ToastPosition, ToastConfig } from './toast/toast.component';
 export type { PaginationConfig, PaginationChange } from './pagination/pagination.component';
+export type { PageHeaderAction, PageHeaderSecondaryAction } from './page-header/page-header.component';
 

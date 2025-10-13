@@ -1,0 +1,145 @@
+<app-page-container>
+  <!-- Header -->
+  <app-page-header
+    title="Design System - Showcase"
+    subtitle="Demonstração dos componentes disponíveis no design system">
+  </app-page-header>
+
+  <!-- Como usar o Lucide -->
+  <app-card>
+    <div class="p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+        </svg>
+        Como usar o Lucide Angular
+      </h3>
+      <p class="text-gray-600 mb-4">Para usar o Lucide Angular em seus componentes:</p>
+      
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-gray-800 mb-2">1. Configure os ícones no app.config.ts (já feito):</h4>
+        <pre class="text-sm text-gray-700 bg-white p-2 rounded border">import {{ '{' }} LucideAngularModule, Plus, Edit {{ '}' }} from 'lucide-angular';
+importProvidersFrom(LucideAngularModule.pick({{ '{' }} Plus, Edit {{ '}' }}))</pre>
+        
+        <h4 class="font-semibold text-gray-800 mb-2 mt-4">2. Importe o módulo no componente:</h4>
+        <pre class="text-sm text-gray-700 bg-white p-2 rounded border">imports: [CommonModule, LucideAngularModule]</pre>
+        
+        <h4 class="font-semibold text-gray-800 mb-2 mt-4">3. Use no template:</h4>
+        <pre class="text-sm text-gray-700 bg-white p-2 rounded border">&lt;lucide-icon name="edit" class="h-6 w-6 text-blue-500"&gt;&lt;/lucide-icon&gt;</pre>
+      </div>
+      
+      <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+        <h4 class="font-semibold text-blue-800 mb-2">Ícones disponíveis:</h4>
+        <p class="text-blue-700 text-sm mb-2">
+          Os seguintes ícones já estão configurados e prontos para uso:
+        </p>
+        <div class="text-blue-700 text-sm grid grid-cols-2 gap-1">
+          <span>• plus</span>
+          <span>• edit</span>
+          <span>• trash-2</span>
+          <span>• arrow-left</span>
+          <span>• arrow-right</span>
+          <span>• check</span>
+          <span>• x</span>
+          <span>• eye</span>
+          <span>• settings</span>
+        </div>
+        <p class="text-blue-700 text-sm mt-2">
+          Para adicionar novos ícones, inclua-os no app.config.ts
+        </p>
+      </div>
+    </div>
+  </app-card>
+
+  <!-- Botões com Ícones -->
+  <app-card>
+    <div class="p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+        Botões com Ícones
+      </h3>
+      <p class="text-gray-600 mb-4">Exemplos de botões utilizando ícones:</p>
+      
+      <div class="space-y-4">
+        <div class="flex flex-wrap gap-3">
+          <app-button variant="primary" icon="plus" label="Adicionar"></app-button>
+          <app-button variant="secondary" icon="edit" label="Editar"></app-button>
+          <app-button variant="outline" icon="eye" label="Visualizar"></app-button>
+          <app-button variant="danger" icon="trash" label="Excluir"></app-button>
+          <app-button variant="ghost" icon="cog" label="Configurações"></app-button>
+        </div>
+        
+        <div class="flex flex-wrap gap-3">
+          <app-button variant="primary" icon="plus" size="sm"></app-button>
+          <app-button variant="secondary" icon="edit" size="sm"></app-button>
+          <app-button variant="outline" icon="eye" size="sm"></app-button>
+          <app-button variant="danger" icon="trash" size="sm"></app-button>
+        </div>
+        
+        <div class="flex flex-wrap gap-3">
+          <app-button variant="primary" icon="plus" size="lg" label="Botão Grande"></app-button>
+          <app-button variant="secondary" icon="edit" size="lg" label="Botão Grande"></app-button>
+        </div>
+      </div>
+    </div>
+  </app-card>
+
+  <!-- Botões com Loading -->
+  <app-card>
+    <div class="p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <svg class="h-5 w-5 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Botões com Loading
+      </h3>
+      <p class="text-gray-600 mb-4">Botões em estado de carregamento:</p>
+      
+      <div class="flex flex-wrap gap-3">
+        <app-button variant="primary" [loading]="true" label="Carregando..."></app-button>
+        <app-button variant="secondary" [loading]="true" label="Processando..."></app-button>
+        <app-button variant="outline" [loading]="true" label="Salvando..."></app-button>
+        <app-button variant="danger" [loading]="true" label="Excluindo..."></app-button>
+      </div>
+    </div>
+  </app-card>
+
+  <!-- Variantes de Botões -->
+  <app-card>
+    <div class="p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Variantes de Botões
+      </h3>
+      <p class="text-gray-600 mb-4">Diferentes estilos de botões disponíveis:</p>
+      
+      <div class="space-y-4">
+        <div class="flex flex-wrap gap-3">
+          <app-button variant="primary" label="Primary"></app-button>
+          <app-button variant="secondary" label="Secondary"></app-button>
+          <app-button variant="outline" label="Outline"></app-button>
+          <app-button variant="ghost" label="Ghost"></app-button>
+          <app-button variant="danger" label="Danger"></app-button>
+        </div>
+        
+        <div class="flex flex-wrap gap-3">
+          <app-button variant="primary" size="sm" label="Small"></app-button>
+          <app-button variant="primary" size="md" label="Medium"></app-button>
+          <app-button variant="primary" size="lg" label="Large"></app-button>
+        </div>
+        
+        <div class="flex flex-wrap gap-3">
+          <app-button variant="primary" [disabled]="true" label="Disabled"></app-button>
+          <app-button variant="secondary" [disabled]="true" label="Disabled"></app-button>
+          <app-button variant="outline" [disabled]="true" label="Disabled"></app-button>
+        </div>
+      </div>
+    </div>
+  </app-card>
+</app-page-container>

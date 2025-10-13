@@ -1,18 +1,15 @@
-<div class="min-h-screen bg-secondary-50 p-6">
-  <div class="max-w-7xl mx-auto">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-secondary-900 mb-2">Agendamentos</h1>
-        <p class="text-secondary-600">Gerencie os agendamentos da sua clínica</p>
-      </div>
-      <app-button
-        label="Novo Agendamento"
-        icon="plus"
-        variant="primary"
-        (clicked)="onAppointmentAction('create', null!)">
-      </app-button>
-    </div>
+<app-page-container>
+  <!-- Header -->
+  <app-page-header
+    title="Agendamentos"
+    subtitle="Gerencie os agendamentos da sua clínica"
+    [action]="{
+      label: 'Novo Agendamento',
+      icon: 'plus',
+      variant: 'primary'
+    }"
+    (actionClick)="onAppointmentAction('create', null!)">
+  </app-page-header>
 
     <!-- Filters -->
     <app-schedule-filters
@@ -140,5 +137,4 @@
         </div>
       </app-card>
     }
-  </div>
-</div>
+</app-page-container>

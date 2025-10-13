@@ -12,6 +12,8 @@ import { CardComponent } from '../../../shared/components/card/card.component';
 import { BadgeComponent } from '../../../shared/components/badge/badge.component';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { PaginationComponent, PaginationConfig, PaginationChange } from '../../../shared/components/pagination/pagination.component';
+import { PageContainerComponent } from '../../../shared/components/page-container/page-container.component';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-service-list',
@@ -26,7 +28,9 @@ import { PaginationComponent, PaginationConfig, PaginationChange } from '../../.
     CardComponent,
     BadgeComponent,
     ModalComponent,
-    PaginationComponent
+    PaginationComponent,
+    PageContainerComponent,
+    PageHeaderComponent
   ],
   templateUrl: './service-list.component.html',
   styleUrls: ['./service-list.component.css']

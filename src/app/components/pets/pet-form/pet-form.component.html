@@ -1,18 +1,16 @@
-<div class="min-h-screen bg-secondary-50 p-6">
+<app-page-container>
   <div class="max-w-4xl mx-auto">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-secondary-900 mb-2">{{ isEditMode ? 'Editar Pet' : 'Novo Pet' }}</h1>
-        <p class="text-secondary-600">{{ isEditMode ? 'Atualize as informações do pet' : 'Cadastre um novo pet para a clínica' }}</p>
-      </div>
-      <app-button 
-        label="Voltar"
-        icon="arrow-left"
-        variant="secondary"
-        (clicked)="onCancel()">
-      </app-button>
-    </div>
+    <app-page-header
+      [title]="isEditMode ? 'Editar Pet' : 'Novo Pet'"
+      [subtitle]="isEditMode ? 'Atualize as informações do pet' : 'Cadastre um novo pet para a clínica'"
+      [action]="{
+        label: 'Voltar',
+        icon: 'arrow-left',
+        variant: 'secondary'
+      }"
+      (actionClick)="onCancel()">
+    </app-page-header>
 
 
     <!-- Form -->
@@ -203,7 +201,7 @@
       </div>
     </form>
   </div>
-</div>
+</app-page-container>
 
 <style>
 /* Estilos para os cartões do tutor */

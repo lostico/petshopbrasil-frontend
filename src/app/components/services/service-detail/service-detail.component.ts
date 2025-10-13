@@ -7,6 +7,8 @@ import { ToastService } from '../../../shared/services/toast.service';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { BadgeComponent } from '../../../shared/components/badge/badge.component';
+import { PageContainerComponent } from '../../../shared/components/page-container/page-container.component';
+import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-service-detail',
@@ -15,7 +17,9 @@ import { BadgeComponent } from '../../../shared/components/badge/badge.component
     CommonModule,
     ButtonComponent,
     CardComponent,
-    BadgeComponent
+    BadgeComponent,
+    PageContainerComponent,
+    PageHeaderComponent
   ],
   templateUrl: './service-detail.component.html',
   styleUrls: ['./service-detail.component.css']

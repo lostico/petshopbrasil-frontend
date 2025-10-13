@@ -10,7 +10,9 @@ import {
   ButtonComponent,
   InputComponent,
   SelectComponent,
-  CardComponent
+  CardComponent,
+  PageContainerComponent,
+  PageHeaderComponent
 } from '../../../shared/components';
 
 @Component({
@@ -23,7 +25,9 @@ import {
     ButtonComponent,
     InputComponent,
     SelectComponent,
-    CardComponent
+    CardComponent,
+    PageContainerComponent,
+    PageHeaderComponent
   ],
   templateUrl: './pet-form.component.html'
 })

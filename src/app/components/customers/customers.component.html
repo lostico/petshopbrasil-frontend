@@ -1,18 +1,15 @@
-<div class="min-h-screen bg-secondary-50 p-6">
-  <div class="max-w-7xl mx-auto">
+<app-page-container>
     <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-secondary-900 mb-2">Clientes</h1>
-        <p class="text-secondary-600">Gerencie os clientes da sua clínica</p>
-      </div>
-      <app-button
-        label="Novo Cliente"
-        icon="plus"
-        variant="primary"
-        (clicked)="onAddCustomer()">
-      </app-button>
-    </div>
+    <app-page-header
+      title="Clientes"
+      subtitle="Gerencie os clientes da sua clínica"
+      [action]="{
+        label: 'Novo Cliente',
+        icon: 'plus',
+        variant: 'primary'
+      }"
+      (actionClick)="onAddCustomer()">
+    </app-page-header>
 
     <!-- Search Section -->
     <div class="mb-6">
@@ -181,8 +178,7 @@
         (pageChange)="onPageChange($event)">
       </app-pagination>
     }
-  </div>
-</div>
+</app-page-container>
 
 <!-- Status Modal -->
 @if (showStatusModal && selectedCustomer) {

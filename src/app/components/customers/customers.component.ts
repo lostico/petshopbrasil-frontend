@@ -12,6 +12,8 @@ import { InputComponent } from '../../shared/components/input/input.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { PaginationComponent, PaginationChange } from '../../shared/components/pagination/pagination.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageContainerComponent } from '../../shared/components/page-container/page-container.component';
 import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
 import { CpfFormatPipe } from '../../shared/pipes/cpf-format.pipe';
 
@@ -30,6 +32,8 @@ import { CpfFormatPipe } from '../../shared/pipes/cpf-format.pipe';
     CardComponent,
     BadgeComponent,
     PaginationComponent,
+    PageHeaderComponent,
+    PageContainerComponent,
     PhoneFormatPipe,
     CpfFormatPipe
   ],

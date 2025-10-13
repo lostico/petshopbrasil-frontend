@@ -13,6 +13,8 @@ import { SelectComponent, SelectOption } from '../../shared/components/select/se
 import { CardComponent } from '../../shared/components/card/card.component';
 import { PhoneFormatPipe } from '../../shared/pipes/phone-format.pipe';
 import { PaginationComponent, PaginationConfig, PaginationChange } from '../../shared/components/pagination/pagination.component';
+import { PageContainerComponent } from '../../shared/components/page-container/page-container.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-pets',
@@ -27,7 +29,9 @@ import { PaginationComponent, PaginationConfig, PaginationChange } from '../../s
     SelectComponent,
     CardComponent,
     PhoneFormatPipe,
-    PaginationComponent
+    PaginationComponent,
+    PageContainerComponent,
+    PageHeaderComponent
   ],
   templateUrl: './pets.component.html',
   styleUrls: ['./pets.component.css']

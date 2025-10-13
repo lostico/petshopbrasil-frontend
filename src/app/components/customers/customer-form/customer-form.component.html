@@ -1,18 +1,14 @@
-<div class="min-h-screen bg-secondary-50 p-6">
+<app-page-layout
+  [title]="isEditMode ? 'Editar Cliente' : 'Novo Cliente'"
+  [subtitle]="isEditMode ? 'Edite os dados do cliente' : 'Cadastre um novo cliente na sua clínica'"
+  [action]="{
+    label: 'Voltar',
+    icon: 'arrow-left',
+    variant: 'secondary'
+  }"
+  (actionClick)="onCancel()">
+  
   <div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-secondary-900 mb-2">{{ isEditMode ? 'Editar Cliente' : 'Novo Cliente' }}</h1>
-        <p class="text-secondary-600">{{ isEditMode ? 'Edite os dados do cliente' : 'Cadastre um novo cliente na sua clínica' }}</p>
-      </div>
-      <app-button 
-        label="Voltar"
-        icon="arrow-left"
-        variant="secondary"
-        (clicked)="onCancel()">
-      </app-button>
-    </div>
 
 
     <!-- Form -->
@@ -137,4 +133,4 @@
       </div>
     </form>
   </div>
-</div>
+</app-page-layout>
