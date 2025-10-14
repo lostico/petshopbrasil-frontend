@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 // Design System Components
-import { ButtonComponent } from '../../shared/components/button/button.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { PageContainerComponent } from '../../shared/components/page-container/page-container.component';
@@ -31,7 +30,6 @@ export interface ScheduleAppointment {
   imports: [
     CommonModule,
     FormsModule,
-    ButtonComponent,
     CardComponent,
     BadgeComponent,
     PageContainerComponent,

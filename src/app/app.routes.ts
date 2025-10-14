@@ -44,7 +44,6 @@ export const routes: Routes = [
       { path: 'crm/pets/new/:idTutor', component: PetFormComponent }, // Novo Pet com tutor específico
       { path: 'crm/pets/edit/:id', component: PetFormComponent }, // Editar Pet
       { path: 'schedule', component: ScheduleComponent }, // Agendamentos
-      { path: 'checkin', component: DashboardComponent }, // Check-in/out
 
       // Serviços
       { path: 'services', component: ServiceListComponent }, // Lista de Serviços

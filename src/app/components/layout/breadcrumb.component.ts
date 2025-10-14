@@ -111,7 +111,6 @@ export class BreadcrumbComponent implements OnInit {
       'customers': 'Clientes',
       'pets': 'Pets',
       'schedule': 'Agendamentos',
-      'checkin': 'Check-in/Check-out',
       'grooming': 'Banho & Tosa',
       'vet': 'Veterinário',
       'inpatient': 'Internação',
