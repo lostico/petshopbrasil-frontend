@@ -1,0 +1,206 @@
+<app-page-container>
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex items-center justify-center py-12">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-gray-600">Carregando vacina...</p>
+    </div>
+  </div>
+
+  <!-- Conteúdo da Vacina -->
+  <div *ngIf="!loading && vaccine">
+    <!-- Header -->
+    <app-page-header
+      [title]="vaccine.name"
+      subtitle="Detalhes da vacina"
+      [action]="{
+        label: 'Voltar',
+        icon: 'arrow-left',
+        variant: 'secondary'
+      }"
+      [secondaryAction]="{
+        label: 'Editar',
+        icon: 'edit',
+        variant: 'primary'
+      }"
+      (actionClick)="onBack()"
+      (secondaryActionClick)="onEdit()">
+    </app-page-header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Informações Principais -->
+      <div class="lg:col-span-2 space-y-8">
+        <!-- Card de Informações Básicas -->
+        <div>
+          <app-card>
+            <div class="space-y-6">
+              <div class="flex items-start justify-between">
+                <div>
+                  <h2 class="text-xl font-semibold text-gray-900">{{ vaccine.name }}</h2>
+                  <div class="flex items-center space-x-3 mt-2">
+                    <app-badge 
+                      [variant]="vaccine.isActive ? 'success' : 'danger'"
+                      [text]="getStatusText(vaccine.isActive)"
+                      class="text-sm">
+                    </app-badge>
+                    <app-badge 
+                      [variant]="'secondary'"
+                      [text]="getTypeName(vaccine.type)"
+                      [class]="getTypeBadgeClass(vaccine.type) + ' text-sm'">
+                    </app-badge>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Descrição -->
+              <div *ngIf="vaccine.description">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Descrição</h3>
+                <p class="text-gray-600 leading-relaxed">{{ vaccine.description }}</p>
+              </div>
+
+              <!-- Tipo e Fabricante -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <div class="flex items-center">
+                    <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    <div>
+                      <p class="text-sm font-medium text-gray-700">Tipo</p>
+                      <p class="text-lg font-bold text-blue-600">{{ getTypeName(vaccine.type) }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg" *ngIf="vaccine.manufacturer">
+                  <div class="flex items-center">
+                    <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    <div>
+                      <p class="text-sm font-medium text-gray-700">Fabricante</p>
+                      <p class="text-lg font-bold text-green-600">{{ vaccine.manufacturer }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Espécies Compatíveis -->
+              <div>
+                <h3 class="text-sm font-medium text-gray-700 mb-3">Espécies Compatíveis</h3>
+                <div class="flex flex-wrap gap-2">
+                  <app-badge 
+                    *ngFor="let species of vaccine.species" 
+                    [variant]="'secondary'" 
+                    [text]="getSpeciesName(species)"
+                    class="text-sm">
+                  </app-badge>
+                </div>
+              </div>
+            </div>
+          </app-card>
+        </div>
+
+        <!-- Estatísticas -->
+        <div *ngIf="vaccine._count">
+          <app-card>
+            <div class="space-y-4">
+              <h3 class="text-lg font-medium text-gray-900">Estatísticas</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-1 gap-4">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                  <div class="text-2xl font-bold text-blue-600">{{ vaccine._count.vaccinations }}</div>
+                  <div class="text-sm text-gray-600">Vacinações Registradas</div>
+                </div>
+              </div>
+              <p class="text-sm text-gray-500 mt-2">
+                Quantidade de vacinações que utilizam esta vacina no sistema.
+              </p>
+            </div>
+          </app-card>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-8">
+        <!-- Informações do Sistema -->
+        <div>
+          <app-card>
+            <div class="space-y-4">
+              <h3 class="text-lg font-medium text-gray-900">Informações do Sistema</h3>
+              
+              <div class="space-y-3">
+                <div>
+                  <span class="text-sm text-gray-500">Criado em</span>
+                  <p class="text-sm font-medium text-gray-900">{{ formatDate(vaccine.createdAt) }}</p>
+                </div>
+                
+                <div>
+                  <span class="text-sm text-gray-500">Última atualização</span>
+                  <p class="text-sm font-medium text-gray-900">{{ formatDate(vaccine.updatedAt) }}</p>
+                </div>
+                
+                <div>
+                  <span class="text-sm text-gray-500">ID da Vacina</span>
+                  <p class="text-sm font-mono text-gray-900">{{ vaccine.id }}</p>
+                </div>
+              </div>
+            </div>
+          </app-card>
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div>
+          <app-card>
+            <div class="space-y-4">
+              <h3 class="text-lg font-medium text-gray-900">Ações Rápidas</h3>
+              
+              <div class="space-y-3">
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  icon="edit"
+                  label="Editar Vacina"
+                  class="w-full justify-start"
+                  (clicked)="onEdit()">
+                </app-button>
+              </div>
+            </div>
+          </app-card>
+        </div>
+
+        <!-- Tipo -->
+        <div>
+          <app-card>
+            <div class="space-y-4">
+              <h3 class="text-lg font-medium text-gray-900">Tipo de Vacina</h3>
+              
+              <div class="flex items-center">
+                <app-badge 
+                  [variant]="'secondary'"
+                  [text]="getTypeName(vaccine.type)"
+                  [class]="getTypeBadgeClass(vaccine.type) + ' text-sm'">
+                </app-badge>
+              </div>
+              
+              <p class="text-sm text-gray-600">
+                <span *ngIf="vaccine.type === VaccineType.CORE">
+                  Vacina essencial obrigatória para a saúde do animal.
+                </span>
+                <span *ngIf="vaccine.type === VaccineType.NON_CORE">
+                  Vacina não essencial, opcional para o animal.
+                </span>
+                <span *ngIf="vaccine.type === VaccineType.ANNUAL">
+                  Vacina que deve ser aplicada anualmente.
+                </span>
+                <span *ngIf="vaccine.type === VaccineType.BOOSTER">
+                  Vacina de reforço para manter a imunidade.
+                </span>
+              </p>
+            </div>
+          </app-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-page-container>
+

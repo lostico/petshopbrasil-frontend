@@ -10,6 +10,9 @@ import { PetFormComponent } from './components/pets/pet-form/pet-form.component'
 import { ServiceListComponent } from './components/services/service-list/service-list.component';
 import { ServiceFormComponent } from './components/services/service-form/service-form.component';
 import { ServiceDetailComponent } from './components/services/service-detail/service-detail.component';
+import { VaccineListComponent } from './components/vaccines/vaccine-list/vaccine-list.component';
+import { VaccineFormComponent } from './components/vaccines/vaccine-form/vaccine-form.component';
+import { VaccineDetailComponent } from './components/vaccines/vaccine-detail/vaccine-detail.component';
 import { ScheduleComponent } from './components/schedule/schedule.component';
 import { ShowcaseComponent } from './shared/components/showcase/showcase.component';
 import { AuthGuard } from './guards/auth.guard';
@@ -54,6 +57,12 @@ export const routes: Routes = [
       { path: 'vet', component: DashboardComponent }, // Veterinário
       { path: 'inpatient', component: DashboardComponent }, // Internação
       { path: 'hotel', component: DashboardComponent }, // Hotel
+
+      // Cadastros
+      { path: 'vaccines', component: VaccineListComponent }, // Vacinas
+      { path: 'vaccines/new', component: VaccineFormComponent }, // Nova Vacina
+      { path: 'vaccines/:id/edit', component: VaccineFormComponent }, // Editar Vacina
+      { path: 'vaccines/:id', component: VaccineDetailComponent }, // Detalhes da Vacina
 
       // Produtos & Estoque
       { path: 'catalog', component: DashboardComponent }, // Catálogo

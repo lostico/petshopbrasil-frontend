@@ -1,0 +1,209 @@
+<app-page-container>
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <app-page-header 
+      [title]="isEditMode ? 'Editar Vacina' : 'Nova Vacina'"
+      [subtitle]="isEditMode ? 'Atualize as informações da vacina' : 'Cadastre uma nova vacina para a clínica'"
+      [action]="{
+        label: 'Voltar',
+        icon: 'arrow-left',
+        variant: 'secondary'
+      }" 
+      (actionClick)="onCancel()">
+    </app-page-header>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex items-center justify-center py-12">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="mt-4 text-gray-600">Carregando vacina...</p>
+      </div>
+    </div>
+
+    <!-- Formulário -->
+    <div *ngIf="!loading">
+      <form [formGroup]="vaccineForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Coluna Esquerda -->
+          <div class="space-y-6">
+            <!-- Nome da Vacina -->
+            <app-card>
+              <div class="space-y-4">
+                <div>
+                  <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nome da Vacina *
+                  </label>
+                  <app-input 
+                    id="name" 
+                    type="text" 
+                    placeholder="Ex: V10" 
+                    formControlName="name"
+                    [class]="name?.invalid && name?.touched ? 'border-red-500' : ''" 
+                    class="w-full">
+                  </app-input>
+                  <div *ngIf="name?.invalid && name?.touched" class="mt-1 text-sm text-red-600">
+                    <span *ngIf="name?.errors?.['required']">Nome é obrigatório</span>
+                    <span *ngIf="name?.errors?.['whitespace']">Nome não pode ser apenas espaços</span>
+                    <span *ngIf="name?.errors?.['minlength']">Nome deve ter pelo menos 3 caracteres</span>
+                    <span *ngIf="name?.errors?.['maxlength']">Nome deve ter no máximo 100 caracteres</span>
+                  </div>
+                </div>
+
+                <!-- Descrição -->
+                <div>
+                  <app-textarea 
+                    id="description" 
+                    label="Descrição" 
+                    placeholder="Descreva a vacina..."
+                    [rows]="4" 
+                    [maxlength]="500" 
+                    [showCharacterCounter]="true" 
+                    formControlName="description"
+                    [invalid]="!!(description?.invalid && description?.touched)"
+                    [errorMessage]="description?.invalid && description?.touched && description?.errors?.['maxlength'] ? 'Descrição deve ter no máximo 500 caracteres' : ''"
+                    class="w-full">
+                  </app-textarea>
+                </div>
+
+                <!-- Tipo -->
+                <div>
+                  <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo *
+                  </label>
+                  <app-select 
+                    id="type" 
+                    formControlName="type" 
+                    [options]="typeOptions"
+                    placeholder="Selecione o tipo"
+                    [class]="type?.invalid && type?.touched ? 'border-red-500' : ''" 
+                    class="w-full">
+                  </app-select>
+                  <div *ngIf="type?.invalid && type?.touched" class="mt-1 text-sm text-red-600">
+                    <span *ngIf="type?.errors?.['required']">Tipo é obrigatório</span>
+                  </div>
+                </div>
+              </div>
+            </app-card>
+          </div>
+
+          <!-- Coluna Direita -->
+          <div class="space-y-6">
+            <!-- Espécies -->
+            <app-card>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Espécies Compatíveis *
+                  </label>
+                  <div class="space-y-2">
+                    <label 
+                      *ngFor="let option of speciesOptions" 
+                      class="flex items-center p-3 rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer"
+                      [class.border-blue-500]="isSpeciesSelected(option.value)"
+                      [class.bg-blue-50]="isSpeciesSelected(option.value)">
+                      <input 
+                        type="checkbox" 
+                        [checked]="isSpeciesSelected(option.value)"
+                        (change)="toggleSpecies(option.value)"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                      <span class="ml-3 text-sm text-gray-700">{{ option.label }}</span>
+                    </label>
+                  </div>
+                  <div *ngIf="species?.invalid && species?.touched" class="mt-1 text-sm text-red-600">
+                    <span *ngIf="species?.errors?.['required']">Selecione pelo menos uma espécie</span>
+                  </div>
+                  <p class="mt-2 text-sm text-gray-500">
+                    Selecione todas as espécies compatíveis com esta vacina
+                  </p>
+                </div>
+              </div>
+            </app-card>
+
+            <!-- Fabricante -->
+            <app-card>
+              <div class="space-y-4">
+                <div>
+                  <label for="manufacturer" class="block text-sm font-medium text-gray-700 mb-2">
+                    Fabricante
+                  </label>
+                  <app-input 
+                    id="manufacturer" 
+                    type="text" 
+                    placeholder="Ex: Fabricante XYZ" 
+                    formControlName="manufacturer"
+                    [class]="manufacturer?.invalid && manufacturer?.touched ? 'border-red-500' : ''" 
+                    class="w-full">
+                  </app-input>
+                  <div *ngIf="manufacturer?.invalid && manufacturer?.touched" class="mt-1 text-sm text-red-600">
+                    <span *ngIf="manufacturer?.errors?.['maxlength']">Fabricante deve ter no máximo 100 caracteres</span>
+                  </div>
+                </div>
+
+                <!-- Status -->
+                <div>
+                  <label class="flex items-center">
+                    <input 
+                      type="checkbox" 
+                      formControlName="isActive"
+                      class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <span class="ml-2 text-sm font-medium text-gray-700">
+                      Vacina Ativa
+                    </span>
+                  </label>
+                  <p class="mt-1 text-sm text-gray-500">
+                    Vacinas inativas não aparecerão para seleção
+                  </p>
+                </div>
+              </div>
+            </app-card>
+
+            <!-- Informações Adicionais -->
+            <div *ngIf="isEditMode && vaccine">
+              <app-card>
+                <div class="space-y-4">
+                  <h3 class="text-lg font-medium text-gray-900">Informações da Vacina</h3>
+
+                  <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span class="text-gray-500">Criado em:</span>
+                      <p class="font-medium">{{ vaccine.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                    </div>
+                    <div>
+                      <span class="text-gray-500">Última atualização:</span>
+                      <p class="font-medium">{{ vaccine.updatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                    </div>
+                  </div>
+
+                  <div *ngIf="vaccine._count" class="text-sm">
+                    <span class="text-gray-500">Vacinações registradas:</span>
+                    <p class="font-medium">{{ vaccine._count.vaccinations }}</p>
+                  </div>
+                </div>
+              </app-card>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+          <app-button 
+            type="button" 
+            variant="secondary" 
+            label="Cancelar" 
+            (clicked)="onCancel()" 
+            [disabled]="submitting">
+          </app-button>
+
+          <app-button 
+            type="submit" 
+            variant="primary" 
+            [label]="isEditMode ? 'Atualizar Vacina' : 'Criar Vacina'"
+            [loading]="submitting" 
+            [disabled]="vaccineForm.invalid || submitting || selectedSpecies.length === 0">
+          </app-button>
+        </div>
+      </form>
+    </div>
+  </div>
+</app-page-container>
+

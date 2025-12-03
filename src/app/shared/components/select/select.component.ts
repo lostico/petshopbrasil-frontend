@@ -36,7 +36,7 @@ export interface SelectOption {
           [class]="selectClasses"
         >
           <option 
-            *ngIf="placeholder" 
+            *ngIf="placeholder && !value" 
             value="" 
             disabled 
             selected

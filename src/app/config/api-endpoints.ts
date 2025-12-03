@@ -101,6 +101,15 @@ export class ApiEndpoints {
     BY_CLINIC: (clinicId: string) => `${this.BASE_URL}/services/clinic/${clinicId}`
   };
 
+  // Vaccines endpoints
+  static readonly VACCINES = {
+    LIST: `${this.BASE_URL}/vaccines`,
+    CREATE: `${this.BASE_URL}/vaccines`,
+    BY_ID: (id: string) => `${this.BASE_URL}/vaccines/${id}`,
+    UPDATE: (id: string) => `${this.BASE_URL}/vaccines/${id}`,
+    DELETE: (id: string) => `${this.BASE_URL}/vaccines/${id}`
+  };
+
   // Orders endpoints
   static readonly ORDERS = {
     LIST: `${this.BASE_URL}/orders`,

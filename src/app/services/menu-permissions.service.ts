@@ -31,6 +31,12 @@ export class MenuPermissionsService {
     { route: '/inpatient', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
     { route: '/hotel', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
     
+    // Cadastros
+    { route: '/vaccines', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
+    { route: '/vaccines/new', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
+    { route: '/vaccines/:id', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
+    { route: '/vaccines/:id/edit', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'VET'] },
+    
     // Produtos & Estoque
     { route: '/catalog', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
     { route: '/inventory', roles: ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'] },
