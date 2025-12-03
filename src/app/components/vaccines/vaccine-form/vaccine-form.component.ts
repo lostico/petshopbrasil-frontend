@@ -148,10 +148,15 @@ export class VaccineFormComponent implements OnInit, OnDestroy {
     this.vaccineForm.patchValue({
       name: vaccine.name,
       description: vaccine.description || '',
-      type: vaccine.type,
+      type: String(vaccine.type),
       manufacturer: vaccine.manufacturer || '',
       isActive: vaccine.isActive
     });
+    
+    // Garantir que o tipo seja setado corretamente como string
+    // Isso resolve o problema do select não reconhecer o valor
+    const typeValue = String(vaccine.type);
+    this.type?.setValue(typeValue, { emitEvent: false });
     
     // Atualizar o FormControl de espécies após popular o form
     this.updateSpeciesFormControl();

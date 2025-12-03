@@ -1,4 +1,4 @@
-import { Component, Input, forwardRef } from '@angular/core';
+import { Component, Input, forwardRef, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 
@@ -27,9 +27,9 @@ export interface SelectOption {
       
       <div class="relative">
         <select
+          #selectElement
           [id]="id"
           [disabled]="disabled"
-          [value]="value"
           (change)="onSelectChange($event)"
           (blur)="onBlur()"
           (focus)="onFocus()"
@@ -48,6 +48,7 @@ export interface SelectOption {
           <option 
             *ngFor="let option of options" 
             [value]="option.value"
+            [selected]="isOptionSelected(option.value)"
             [disabled]="option.disabled"
             class="text-secondary-900"
           >
@@ -111,7 +112,7 @@ export interface SelectOption {
     }
   ]
 })
-export class SelectComponent implements ControlValueAccessor {
+export class SelectComponent implements ControlValueAccessor, AfterViewInit {
   @Input() id = '';
   @Input() label = '';
   @Input() placeholder = '';
@@ -123,11 +124,19 @@ export class SelectComponent implements ControlValueAccessor {
   @Input() invalid = false;
   @Input() valid = false;
 
+  @ViewChild('selectElement') selectElement!: ElementRef<HTMLSelectElement>;
+
   value: string | number = '';
   touched = false;
 
   onValueChange = (value: string | number) => {};
   onTouched = () => {};
+
+  constructor(private cdr: ChangeDetectorRef) {}
+
+  ngAfterViewInit(): void {
+    this.updateSelectValue();
+  }
 
   get selectClasses(): string {
     const baseClasses = [
@@ -160,8 +169,29 @@ export class SelectComponent implements ControlValueAccessor {
     return baseClasses.join(' ');
   }
 
+  isOptionSelected(optionValue: string | number): boolean {
+    if (this.value === '' || this.value === null || this.value === undefined) {
+      return false;
+    }
+    // Comparar como strings para garantir correspondência
+    return String(this.value) === String(optionValue);
+  }
+
   writeValue(value: string | number): void {
-    this.value = value;
+    // Converter para string para garantir comparação correta
+    this.value = value !== null && value !== undefined ? String(value) : '';
+    this.updateSelectValue();
+    this.cdr.markForCheck();
+  }
+
+  private updateSelectValue(): void {
+    // Usar setTimeout para garantir que o DOM esteja atualizado
+    setTimeout(() => {
+      if (this.selectElement?.nativeElement) {
+        const stringValue = this.value !== null && this.value !== undefined ? String(this.value) : '';
+        this.selectElement.nativeElement.value = stringValue;
+      }
+    }, 0);
   }
 
   registerOnChange(fn: any): void {
