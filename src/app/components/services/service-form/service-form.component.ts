@@ -73,7 +73,7 @@ export class ServiceFormComponent implements OnInit, OnDestroy {
     this.serviceForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
       description: ['', [Validators.maxLength(500)]],
-      price: ['', [Validators.required, Validators.min(0.01), Validators.max(999999.99)]],
+      price: ['', [Validators.required, Validators.min(0), Validators.max(999999.99)]],
       duration: ['', [Validators.required, Validators.min(1), Validators.max(480)]], // Máximo 8 horas
       category: ['', [Validators.required]],
       isActive: [true]

@@ -86,14 +86,14 @@
                     </label>
                     <div class="relative">
                       <span class="absolute left-3 top-2 text-gray-500">R$</span>
-                      <app-input id="price" type="number" step="0.01" min="0.01" placeholder="0,00"
+                      <app-input id="price" type="number" step="0.01" min="0" placeholder="0,00"
                         formControlName="price" (input)="onPriceChange($event)"
                         [class]="price?.invalid && price?.touched ? 'border-red-500' : ''" class="w-full pl-10">
                       </app-input>
                     </div>
                     <div *ngIf="price?.invalid && price?.touched" class="mt-1 text-sm text-red-600">
                       <span *ngIf="price?.errors?.['required']">Preço é obrigatório</span>
-                      <span *ngIf="price?.errors?.['min']">Preço deve ser maior que zero</span>
+                      <span *ngIf="price?.errors?.['min']">Preço não pode ser negativo</span>
                       <span *ngIf="price?.errors?.['max']">Preço deve ser menor que R$ 999.999,99</span>
                     </div>
                   </div>
