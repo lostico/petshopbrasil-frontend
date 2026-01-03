@@ -38,6 +38,7 @@ export class ApiEndpoints {
     UPDATE: (id: string) => `${this.BASE_URL}/pets/${id}`,
     DELETE: (id: string) => `${this.BASE_URL}/pets/${id}`,
     BY_OWNER: (ownerId: string) => `${this.BASE_URL}/pets/owner/${ownerId}`,
+    BY_TUTOR: `${this.BASE_URL}/pets/tutor`,
     SEARCH: `${this.BASE_URL}/pets/search`
   };
 
@@ -73,8 +74,7 @@ export class ApiEndpoints {
     BY_PET: (petId: string) => `${this.BASE_URL}/appointments/pet/${petId}`,
     BY_VET: (vetId: string) => `${this.BASE_URL}/appointments/vet/${vetId}`,
     BY_CLINIC: (clinicId: string) => `${this.BASE_URL}/appointments/clinic/${clinicId}`,
-    BY_DATE: (date: string) => `${this.BASE_URL}/appointments/date/${date}`,
-    AVAILABLE_SLOTS: `${this.BASE_URL}/appointments/available-slots`
+    BY_DATE: (date: string) => `${this.BASE_URL}/appointments/date/${date}`
   };
 
   // Products endpoints
@@ -179,7 +179,8 @@ export class ApiEndpoints {
     BY_ID: (id: string) => `${this.BASE_URL}/schedules/${id}`,
     UPDATE: (id: string) => `${this.BASE_URL}/schedules/${id}`,
     DELETE: (id: string) => `${this.BASE_URL}/schedules/${id}`,
-    TIMELINE: (id: string) => `${this.BASE_URL}/schedules/${id}/timeline`
+    TIMELINE: (id: string) => `${this.BASE_URL}/schedules/${id}/timeline`,
+    AVAILABLE_SLOTS: (scheduleId: string) => `${this.BASE_URL}/schedules/${scheduleId}/available-slots`
   };
 
   // Utility method to get base URL

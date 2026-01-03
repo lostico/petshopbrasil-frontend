@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, OnChanges, SimpleChanges, Input, Output, 
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { AppointmentService, Appointment, CreateAppointmentRequest, UpdateAppointmentRequest } from '../../../services/appointment.service';
 import { ScheduleService, Schedule } from '../../../services/schedule.service';
 import { ServiceService, Service } from '../../../services/service.service';
@@ -59,6 +60,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
   availableTutors: Tutor[] = [];
   availableSlots: string[] = [];
   loadingSlots = false;
+  private isInitializing = false; // Flag para evitar chamadas durante inicialização
 
   modalConfig: ModalConfig = {
     title: 'Novo Agendamento',
@@ -87,7 +89,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnInit(): void {
     this.loadSchedules();
-    this.loadServices();
+    // Não carregar todos os serviços - serão carregados baseados na agenda selecionada
     this.updateModalConfig();
   }
 
@@ -106,20 +108,37 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
         } else {
           this.isEditMode = false;
           this.modalConfig.title = 'Novo Agendamento';
+          this.isInitializing = true; // Marcar início da inicialização
           this.resetForm();
           
           // Preencher valores iniciais se fornecidos
+          // Ordem importante: scheduleId -> date -> time
+          // Usar emitEvent: false para evitar disparar valueChanges durante inicialização
           if (this.scheduleId) {
-            this.appointmentForm.patchValue({ scheduleId: this.scheduleId });
-            this.onScheduleChange();
+            this.appointmentForm.patchValue({ scheduleId: this.scheduleId }, { emitEvent: false });
           }
           if (this.date) {
-            this.appointmentForm.patchValue({ date: this.date });
-            this.onDateChange();
+            this.appointmentForm.patchValue({ date: this.date }, { emitEvent: false });
           }
           if (this.time) {
-            this.appointmentForm.patchValue({ time: this.time });
+            // Adicionar o horário à lista de slots imediatamente
+            this.availableSlots = [this.time];
+            const timeControl = this.appointmentForm.get('time');
+            timeControl?.enable();
+            this.appointmentForm.patchValue({ time: this.time }, { emitEvent: false });
           }
+          
+          // Carregar serviços da agenda se houver scheduleId
+          if (this.scheduleId) {
+            this.loadServicesForSchedule(this.scheduleId);
+          }
+          
+          // Carregar slots disponíveis após definir scheduleId e date
+          if (this.scheduleId && this.date) {
+            this.loadAvailableSlots();
+          }
+          
+          this.isInitializing = false; // Marcar fim da inicialização
         }
         this.updateModalConfig();
       }
@@ -133,7 +152,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
       time: [{ value: '', disabled: true }, [Validators.required]], // Desabilitado inicialmente
       petId: [{ value: '', disabled: true }, [Validators.required]], // Desabilitado inicialmente
       clinicTutorId: ['', [Validators.required]],
-      serviceId: ['', [Validators.required]],
+      serviceId: [{ value: '', disabled: true }, [Validators.required]], // Desabilitado inicialmente - será habilitado quando agenda for selecionada
       vetId: [''],
       status: ['SCHEDULED'],
       notes: ['']
@@ -149,7 +168,10 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
       .subscribe(() => this.onDateChange());
 
     this.appointmentForm.get('clinicTutorId')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
       .subscribe(() => this.onTutorChange());
   }
 
@@ -166,15 +188,100 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
       });
   }
 
-  private loadServices(): void {
-    this.serviceService.getAllServices({ isActive: true })
+  private loadServicesForSchedule(scheduleId: string, keepCurrentValue: boolean = false): void {
+    if (!scheduleId) {
+      this.availableServices = [];
+      const serviceControl = this.appointmentForm.get('serviceId');
+      if (!keepCurrentValue) {
+        serviceControl?.disable();
+        serviceControl?.setValue('');
+      }
+      return;
+    }
+
+    // Buscar a agenda completa para obter os serviços configurados
+    this.scheduleService.getScheduleById(scheduleId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.availableServices = response.data || [];
+          // Verificar se a resposta tem a estrutura esperada
+          if (!response) {
+            console.error('Resposta vazia ao buscar agenda');
+            this.availableServices = [];
+            const serviceControl = this.appointmentForm.get('serviceId');
+            serviceControl?.disable();
+            serviceControl?.setValue('');
+            return;
+          }
+
+          // A resposta pode vir como { schedule: Schedule } ou diretamente como Schedule
+          const schedule = response.schedule || response;
+          
+          if (!schedule || !schedule.id) {
+            console.error('Agenda inválida na resposta:', response);
+            this.availableServices = [];
+            const serviceControl = this.appointmentForm.get('serviceId');
+            serviceControl?.disable();
+            serviceControl?.setValue('');
+            return;
+          }
+          
+          // Filtrar apenas serviços ativos da agenda
+          const scheduleServices = (schedule.scheduleServices || [])
+            .filter(ss => ss.isActive && ss.service)
+            .map(ss => ss.service);
+          
+          // Converter para o formato Service esperado
+          this.availableServices = scheduleServices.map(ss => ({
+            id: ss.id,
+            name: ss.name,
+            category: ss.category as any, // Converter string para ServiceCategory
+            // Campos opcionais que podem não estar presentes
+            description: '',
+            duration: 0,
+            price: 0,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          } as Service));
+          
+          // Habilitar/desabilitar campo de serviço baseado na disponibilidade
+          const serviceControl = this.appointmentForm.get('serviceId');
+          if (!serviceControl) {
+            console.error('Campo serviceId não encontrado no formulário');
+            return;
+          }
+          
+          const currentServiceId = serviceControl.value;
+          
+          if (this.availableServices.length > 0) {
+            // Sempre habilitar se houver serviços disponíveis
+            serviceControl.enable();
+            // Se o serviço atual não está na lista, limpar (exceto em modo de edição)
+            if (!keepCurrentValue && currentServiceId && !this.availableServices.find(s => s.id === currentServiceId)) {
+              serviceControl.setValue('');
+            }
+          } else {
+            // Se não há serviços mas estamos em modo de edição, manter habilitado
+            if (keepCurrentValue && currentServiceId) {
+              serviceControl.enable();
+            } else {
+              serviceControl.disable();
+              if (!keepCurrentValue) {
+                serviceControl.setValue('');
+              }
+            }
+          }
         },
         error: (error) => {
-          console.error('Erro ao carregar serviços:', error);
+          console.error('Erro ao carregar serviços da agenda:', error);
+          this.availableServices = [];
+          const serviceControl = this.appointmentForm.get('serviceId');
+          // Em modo de edição, manter habilitado se já houver valor
+          if (!keepCurrentValue || !serviceControl?.value) {
+            serviceControl?.disable();
+            serviceControl?.setValue('');
+          }
         }
       });
   }
@@ -195,9 +302,14 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
       });
   }
 
-  private loadPetsByTutor(tutorId: string): void {
+  private loadPetsByTutor(tutorId: string, keepCurrentValue: boolean = false): void {
     if (!tutorId) {
       this.availablePets = [];
+      const petControl = this.appointmentForm.get('petId');
+      if (!keepCurrentValue) {
+        petControl?.disable();
+        petControl?.setValue('');
+      }
       return;
     }
 
@@ -206,10 +318,35 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
       .subscribe({
         next: (pets) => {
           this.availablePets = Array.isArray(pets) ? pets : [];
+          // Habilitar/desabilitar campo de pet baseado na disponibilidade
+          const petControl = this.appointmentForm.get('petId');
+          const currentPetId = petControl?.value;
+          
+          if (this.availablePets.length > 0) {
+            petControl?.enable();
+            // Se não há valor atual ou o valor atual não está na lista, limpar
+            if (!keepCurrentValue && (!currentPetId || !this.availablePets.find(p => p.id === currentPetId))) {
+              petControl?.setValue('');
+            }
+          } else {
+            // Se não há pets mas estamos em modo de edição, manter habilitado
+            if (keepCurrentValue && currentPetId) {
+              petControl?.enable();
+            } else {
+              petControl?.disable();
+              petControl?.setValue('');
+            }
+          }
         },
         error: (error) => {
           console.error('Erro ao carregar pets:', error);
           this.availablePets = [];
+          const petControl = this.appointmentForm.get('petId');
+          // Em modo de edição, manter habilitado se já houver valor
+          if (!keepCurrentValue || !petControl?.value) {
+            petControl?.disable();
+            petControl?.setValue('');
+          }
         }
       });
   }
@@ -218,31 +355,54 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
     const scheduleId = this.appointmentForm.get('scheduleId')?.value;
     const date = this.appointmentForm.get('date')?.value;
     const serviceId = this.appointmentForm.get('serviceId')?.value;
+    const currentTimeValue = this.appointmentForm.get('time')?.value; // Preservar valor atual
 
     if (!scheduleId || !date) {
       this.availableSlots = [];
       const timeControl = this.appointmentForm.get('time');
-      timeControl?.disable();
+      // Só desabilitar se não houver um valor pré-definido
+      if (!this.time && !currentTimeValue) {
+        timeControl?.disable();
+      }
       return;
     }
 
     this.loadingSlots = true;
-    this.appointmentService.getAvailableSlots({
-      scheduleId,
-      date,
-      serviceId: serviceId || undefined
-    })
+    this.scheduleService.getAvailableSlots(scheduleId, date, serviceId || undefined)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.availableSlots = response.slots
-            .filter(slot => slot.available)
+          // Verificar se a agenda funciona no dia
+          if (response.available === false) {
+            this.availableSlots = [];
+            this.loadingSlots = false;
+            const timeControl = this.appointmentForm.get('time');
+            timeControl?.disable();
+            timeControl?.setValue('');
+            return;
+          }
+
+          // Usar availableSlots da resposta (já filtrados)
+          this.availableSlots = response.availableSlots
             .map(slot => slot.time);
+          
+          // Se houver um horário pré-selecionado (passado via input), adicionar à lista se não estiver presente
+          const preselectedTime = this.time || currentTimeValue;
+          if (preselectedTime && !this.availableSlots.includes(preselectedTime)) {
+            this.availableSlots.push(preselectedTime);
+            this.availableSlots.sort(); // Ordenar novamente
+          }
+          
           this.loadingSlots = false;
-          // Habilitar/desabilitar campo de horário baseado na disponibilidade
+          
+          // Habilitar campo de horário se houver slots ou se houver um horário pré-selecionado
           const timeControl = this.appointmentForm.get('time');
-          if (this.availableSlots.length > 0) {
+          if (this.availableSlots.length > 0 || preselectedTime) {
             timeControl?.enable();
+            // Se houver um horário pré-selecionado, garantir que está selecionado
+            if (preselectedTime) {
+              timeControl?.setValue(preselectedTime);
+            }
           } else {
             timeControl?.disable();
             timeControl?.setValue('');
@@ -253,37 +413,72 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
           this.availableSlots = [];
           this.loadingSlots = false;
           const timeControl = this.appointmentForm.get('time');
-          timeControl?.disable();
+          // Se houver um horário pré-selecionado, manter habilitado
+          if (this.time) {
+            this.availableSlots = [this.time];
+            timeControl?.enable();
+            timeControl?.setValue(this.time);
+          } else {
+            timeControl?.disable();
+          }
         }
       });
   }
 
   onScheduleChange(): void {
+    // Evitar chamadas durante inicialização
+    if (this.isInitializing) {
+      return;
+    }
+    
+    const scheduleId = this.appointmentForm.get('scheduleId')?.value;
+    
+    // Carregar serviços da agenda selecionada (a limpeza será feita dentro do método)
+    this.loadServicesForSchedule(scheduleId);
+    
+    // Carregar slots disponíveis
     this.loadAvailableSlots();
   }
 
   onDateChange(): void {
+    // Evitar chamadas durante inicialização
+    if (this.isInitializing) {
+      return;
+    }
     this.loadAvailableSlots();
   }
 
   onTutorChange(): void {
     const tutorId = this.appointmentForm.get('clinicTutorId')?.value;
-    this.loadPetsByTutor(tutorId);
     // Limpar pet selecionado quando trocar tutor
     this.appointmentForm.patchValue({ petId: '' });
-    // Habilitar/desabilitar campo de pet baseado na disponibilidade
+    // Desabilitar temporariamente enquanto carrega os pets
     const petControl = this.appointmentForm.get('petId');
-    if (this.availablePets.length > 0) {
-      petControl?.enable();
-    } else {
-      petControl?.disable();
+    petControl?.disable();
+    // Carregar pets do tutor (a habilitação será feita no callback)
+    this.loadPetsByTutor(tutorId);
+  }
+
+  private setTimeValue(time: string): void {
+    const timeControl = this.appointmentForm.get('time');
+    if (!timeControl) return;
+
+    // Adicionar o horário à lista de slots disponíveis se não estiver presente
+    if (!this.availableSlots.includes(time)) {
+      this.availableSlots.push(time);
+      this.availableSlots.sort();
     }
+
+    // Habilitar o campo e definir o valor
+    timeControl.enable();
+    timeControl.setValue(time);
   }
 
   private loadAppointmentData(): void {
     if (!this.appointment) return;
 
     this.loading = true;
+    this.isInitializing = true; // Marcar início da inicialização
 
     this.appointmentService.getAppointmentById(this.appointment.id)
       .pipe(takeUntil(this.destroy$))
@@ -293,17 +488,26 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
           
           // Carregar tutor e pets primeiro
           if (appointment.clinicTutorId) {
-            this.loadPetsByTutor(appointment.clinicTutorId);
+            // Em modo de edição, manter o valor atual do pet se existir
+            this.loadPetsByTutor(appointment.clinicTutorId, true);
           }
           this.loadTutors();
+          
+          // Carregar serviços da agenda antes de preencher o formulário
+          // Em modo de edição, manter o valor atual do serviço se existir
+          if (appointment.scheduleId) {
+            this.loadServicesForSchedule(appointment.scheduleId, true);
+          }
 
           // Preencher formulário
           const appointmentDate = new Date(appointment.date);
           
           // Habilitar campos antes de preencher (em modo de edição)
           this.appointmentForm.get('time')?.enable();
-          this.appointmentForm.get('petId')?.enable();
+          // petId será habilitado após carregar os pets
+          // serviceId será habilitado após carregar os serviços
           
+          // Usar emitEvent: false para evitar disparar valueChanges durante carregamento
           this.appointmentForm.patchValue({
             scheduleId: appointment.scheduleId,
             date: appointmentDate.toISOString().split('T')[0],
@@ -314,12 +518,14 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
             vetId: appointment.vetId || '',
             status: appointment.status,
             notes: appointment.notes || ''
-          });
+          }, { emitEvent: false });
 
           this.loadAvailableSlots();
+          this.isInitializing = false; // Marcar fim da inicialização
           this.loading = false;
         },
         error: (error) => {
+          this.isInitializing = false; // Garantir que a flag seja resetada em caso de erro
           this.toastService.showError('Erro ao carregar agendamento. Tente novamente.');
           this.loading = false;
           console.error('Erro ao carregar agendamento:', error);
@@ -341,16 +547,26 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
     });
     this.availablePets = [];
     this.availableSlots = [];
+    this.availableServices = [];
     this.loadTutors();
     
     // Desabilitar campos que dependem de outros
-    this.appointmentForm.get('time')?.disable();
-    this.appointmentForm.get('petId')?.disable();
-    
-    // Se há valores iniciais, habilitar campos conforme necessário
-    if (this.scheduleId && this.date) {
-      setTimeout(() => this.loadAvailableSlots(), 0);
+    // Se houver um horário pré-selecionado, manter habilitado
+    const timeControl = this.appointmentForm.get('time');
+    if (this.time) {
+      this.availableSlots = [this.time];
+      timeControl?.enable();
+    } else {
+      timeControl?.disable();
     }
+    this.appointmentForm.get('petId')?.disable();
+    // serviceId será habilitado/desabilitado quando a agenda for selecionada
+    // Não desabilitar aqui se já houver uma agenda pré-selecionada
+    if (!this.scheduleId) {
+      this.appointmentForm.get('serviceId')?.disable();
+    }
+    
+    // Não carregar slots aqui - será carregado no ngOnChanges após patchValue
   }
 
   private updateModalConfig(): void {

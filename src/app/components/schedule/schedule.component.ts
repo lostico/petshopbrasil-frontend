@@ -17,7 +17,7 @@ import { ScheduleFormComponent } from './schedule-form/schedule-form.component';
 import { AppointmentFormComponent } from './appointment-form/appointment-form.component';
 
 // Services
-import { ScheduleService, TimelineResponse, Schedule, ScheduleDay } from '../../services/schedule.service';
+import { ScheduleService, TimelineResponse, TimelineSlot, Schedule, ScheduleDay } from '../../services/schedule.service';
 import { AppointmentService, Appointment } from '../../services/appointment.service';
 import { ToastService } from '../../shared/services/toast.service';
 
@@ -353,6 +353,19 @@ export class ScheduleComponent implements OnInit {
     }
     
     return agenda.intervalMinutes ?? 15;
+  }
+
+  getAgendaSlots(agenda: Agenda): TimelineSlot[] {
+    // Obter slots do cache de timeline
+    const dateStr = this.formatDate(this.selectedDate);
+    const cacheKey = `${agenda.id}-${dateStr}`;
+    const timelineData = this.timelineData.get(cacheKey);
+    
+    if (timelineData?.slots) {
+      return timelineData.slots;
+    }
+    
+    return [];
   }
 
   getAgendaMinIntervalHeight(agenda: Agenda): number {

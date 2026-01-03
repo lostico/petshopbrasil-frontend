@@ -149,10 +149,13 @@ export class PetService {
   }
 
   // Get pets by owner (tutor específico)
+  // Aceita tutorId (pode ser tutor.id ou clinicTutor.id)
   getPetsByOwner(ownerId: string): Observable<Pet[]> {
-    return this.http.get<Pet[]>(`${ApiEndpoints.PETS.LIST}/tutor`, {
+    return this.http.get<{ pets: Pet[] }>(ApiEndpoints.PETS.BY_TUTOR, {
       params: { tutorId: ownerId }
-    });
+    }).pipe(
+      map(response => response.pets || [])
+    );
   }
 
   // Search pets

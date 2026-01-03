@@ -67,6 +67,7 @@
                 [endHour]="getAgendaEndHour(agenda)"
                 [currentTime]="currentTime"
                 [intervalMinutes]="getAgendaIntervalMinutes(agenda)"
+                [slots]="getAgendaSlots(agenda)"
                 (slotClick)="onSlotClick($event, agenda.id)"
                 (appointmentClick)="onAppointmentClick($event)">
               </app-schedule-timeline>

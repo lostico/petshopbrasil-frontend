@@ -94,17 +94,6 @@ export interface AppointmentListResponse {
   };
 }
 
-export interface AvailableSlot {
-  time: string; // HH:mm
-  available: boolean;
-  reason?: string;
-}
-
-export interface AvailableSlotsParams {
-  scheduleId: string;
-  date: string; // YYYY-MM-DD
-  serviceId?: string;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -195,23 +184,6 @@ export class AppointmentService {
    */
   deleteAppointment(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(ApiEndpoints.APPOINTMENTS.DELETE(id));
-  }
-
-  /**
-   * Busca horários disponíveis para uma agenda e data
-   * @param params Parâmetros de busca
-   */
-  getAvailableSlots(params: AvailableSlotsParams): Observable<{ slots: AvailableSlot[] }> {
-    let httpParams = new HttpParams();
-    httpParams = httpParams.set('scheduleId', params.scheduleId);
-    httpParams = httpParams.set('date', params.date);
-    if (params.serviceId) {
-      httpParams = httpParams.set('serviceId', params.serviceId);
-    }
-
-    return this.http.get<{ slots: AvailableSlot[] }>(ApiEndpoints.APPOINTMENTS.AVAILABLE_SLOTS, {
-      params: httpParams
-    });
   }
 }
 

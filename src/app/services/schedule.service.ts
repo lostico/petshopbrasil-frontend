@@ -202,6 +202,33 @@ export interface UpdateScheduleRequest {
   specialties?: string[];
 }
 
+// Interfaces para horários disponíveis
+export interface AvailableSlot {
+  time: string; // HH:mm
+  available: boolean;
+  slot?: string; // Intervalo completo (ex: "08:00 - 08:30")
+  reason?: string; // Motivo se não disponível ("Ocupado" ou "Intervalo")
+}
+
+export interface AvailableSlotsResponse {
+  scheduleId: string;
+  scheduleName: string;
+  date: string; // YYYY-MM-DD
+  scheduleType: string;
+  timeInterval: number;
+  workingHours: {
+    start: string; // HH:mm
+    end: string; // HH:mm
+    breakStart?: string | null; // HH:mm
+    breakEnd?: string | null; // HH:mm
+  };
+  totalSlots: number;
+  availableSlots: AvailableSlot[];
+  allSlots?: AvailableSlot[];
+  available?: boolean; // false se agenda não funciona no dia
+  reason?: string; // Motivo se não disponível
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -299,6 +326,24 @@ export class ScheduleService {
    */
   deleteSchedule(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(ApiEndpoints.SCHEDULES.DELETE(id));
+  }
+
+  /**
+   * Busca horários disponíveis para uma agenda e data
+   * @param scheduleId ID da agenda
+   * @param date Data no formato YYYY-MM-DD
+   * @param serviceId ID do serviço (opcional)
+   */
+  getAvailableSlots(scheduleId: string, date: string, serviceId?: string): Observable<AvailableSlotsResponse> {
+    let httpParams = new HttpParams();
+    httpParams = httpParams.set('date', date);
+    if (serviceId) {
+      httpParams = httpParams.set('serviceId', serviceId);
+    }
+
+    return this.http.get<AvailableSlotsResponse>(ApiEndpoints.SCHEDULES.AVAILABLE_SLOTS(scheduleId), {
+      params: httpParams
+    });
   }
 }
 
