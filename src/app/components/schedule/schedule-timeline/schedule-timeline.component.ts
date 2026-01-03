@@ -26,32 +26,47 @@ export interface SlotClickEvent {
       </div>
 
       <!-- Container Principal com Scroll -->
-      <div class="flex relative overflow-y-auto scrollbar-visible" [style.max-height.px]="getMaxScrollHeight()">
-        <!-- Linha do Tempo Vertical -->
-        <div class="w-20 flex-shrink-0 border-r border-secondary-200 bg-secondary-50" style="height: {{ totalHeight }}px;">
-          @for (slotMinutes of timeSlots; track slotMinutes; let i = $index) {
-            <div
-              class="border-b border-secondary-200 flex items-start justify-end pr-3 pt-1 transition-colors duration-150"
-              [class.bg-primary-50]="hoveredSlotIndex === i"
-              [class.border-primary-300]="hoveredSlotIndex === i"
-              [style.height.px]="getIntervalHeight()">
-              <span 
-                class="text-xs font-medium transition-colors duration-150"
-                [class.text-primary-700]="hoveredSlotIndex === i"
-                [class.text-secondary-600]="hoveredSlotIndex !== i">
-                {{ formatTimeSlot(slotMinutes) }}
-              </span>
+      @if (hasNoSlots()) {
+        <!-- Estado vazio: Sem horários disponíveis -->
+        <div class="flex items-center justify-center py-16 px-6">
+          <div class="text-center">
+            <div class="w-16 h-16 mx-auto mb-4 text-secondary-300">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v4M12 16h.01"/>
+              </svg>
             </div>
-          }
+            <h3 class="text-lg font-semibold text-secondary-700 mb-2">Nenhum horário disponível</h3>
+            <p class="text-sm text-secondary-500">Não existem horários disponíveis para este dia.</p>
+          </div>
         </div>
+      } @else {
+        <div class="flex relative overflow-y-auto scrollbar-visible" [style.max-height.px]="getMaxScrollHeight()">
+          <!-- Linha do Tempo Vertical -->
+          <div class="w-20 flex-shrink-0 border-r border-secondary-200 bg-secondary-50" style="height: {{ totalHeight }}px;">
+            @for (slotMinutes of timeSlots; track slotMinutes; let i = $index) {
+              <div
+                class="border-b border-secondary-200 flex items-start justify-end pr-3 pt-1 transition-colors duration-150"
+                [class.bg-primary-50]="hoveredSlotIndex === i"
+                [class.border-primary-300]="hoveredSlotIndex === i"
+                [style.height.px]="getIntervalHeight()">
+                <span 
+                  class="text-xs font-medium transition-colors duration-150"
+                  [class.text-primary-700]="hoveredSlotIndex === i"
+                  [class.text-secondary-600]="hoveredSlotIndex !== i">
+                  {{ formatTimeSlot(slotMinutes) }}
+                </span>
+              </div>
+            }
+          </div>
 
-        <!-- Área de Agendamentos -->
-        <div
-          class="flex-1 relative cursor-pointer"
-          (click)="onGridClick($event)"
-          (mousemove)="onGridMouseMove($event)"
-          (mouseleave)="onGridMouseLeave()"
-          style="height: {{ totalHeight }}px; min-height: {{ totalHeight }}px;">
+          <!-- Área de Agendamentos -->
+          <div
+            class="flex-1 relative cursor-pointer"
+            (click)="onGridClick($event)"
+            (mousemove)="onGridMouseMove($event)"
+            (mouseleave)="onGridMouseLeave()"
+            style="height: {{ totalHeight }}px; min-height: {{ totalHeight }}px;">
           
           <!-- Linhas de Grade (bordas entre intervalos) -->
           @for (slotMinutes of timeSlots; track slotMinutes; let i = $index) {
@@ -99,8 +114,9 @@ export interface SlotClickEvent {
               </div>
             </div>
           }
+          </div>
         </div>
-      </div>
+      }
     </div>
   `,
   styles: [`
@@ -439,5 +455,18 @@ export class ScheduleTimelineComponent implements OnInit, OnChanges {
 
   onGridMouseLeave(): void {
     this.hoveredSlotIndex = null;
+  }
+
+  hasNoSlots(): boolean {
+    // Verificar se slots foi passado como input mas está vazio ou nulo
+    // Se slots foi explicitamente passado (não undefined) e está vazio, mostrar mensagem
+    if (this.slots !== undefined && (!this.slots || this.slots.length === 0)) {
+      return true;
+    }
+    // Se não há slots gerados e não há fallback válido (sem startHour/endHour configurados)
+    if (this.timeSlots.length === 0 && (!this.startHour || !this.endHour)) {
+      return true;
+    }
+    return false;
   }
 }
