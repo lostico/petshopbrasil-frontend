@@ -14,6 +14,8 @@ export * from './pagination/pagination.component';
 export * from './page-header/page-header.component';
 export * from './page-container/page-container.component';
 export * from './page-layout/page-layout.component';
+export * from './calendar/calendar.component';
+export * from './agenda-list/agenda-list.component';
 
 // Types
 export type { ButtonVariant, ButtonSize } from './button/button.component';
@@ -27,4 +29,6 @@ export type { ModalConfig, ModalAction } from './modal/modal.component';
 export type { ToastVariant, ToastPosition, ToastConfig } from './toast/toast.component';
 export type { PaginationConfig, PaginationChange } from './pagination/pagination.component';
 export type { PageHeaderAction, PageHeaderSecondaryAction } from './page-header/page-header.component';
+export type { CalendarDate } from './calendar/calendar.component';
+export type { Agenda } from './agenda-list/agenda-list.component';
 

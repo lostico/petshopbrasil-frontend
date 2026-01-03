@@ -1,0 +1,225 @@
+<app-modal 
+  [config]="modalConfig"
+  [isOpen]="isOpen"
+  (close)="onClose()">
+  
+  <div *ngIf="loading" class="flex items-center justify-center py-12">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-gray-600">Carregando agenda...</p>
+    </div>
+  </div>
+
+  <form [formGroup]="scheduleForm" *ngIf="!loading" class="space-y-6">
+    <!-- Informações Básicas -->
+    <app-card>
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informações Básicas</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Nome -->
+          <div>
+            <app-input
+              id="schedule-name"
+              label="Nome da Agenda *"
+              type="text"
+              formControlName="name"
+              placeholder="Ex: Consulta Veterinária"
+              [errorMessage]="name?.invalid && name?.touched ? 'Nome é obrigatório (mínimo 3 caracteres)' : ''"
+              [invalid]="!!(name?.invalid && name?.touched)">
+            </app-input>
+          </div>
+
+          <!-- Categoria -->
+          <div>
+            <app-select
+              id="schedule-category"
+              label="Categoria *"
+              formControlName="category"
+              [options]="categories"
+              placeholder="Selecione a categoria"
+              [errorMessage]="category?.invalid && category?.touched ? 'Categoria é obrigatória' : ''"
+              [invalid]="!!(category?.invalid && category?.touched)">
+            </app-select>
+          </div>
+
+          <!-- Tipo de Agendamento -->
+          <div>
+            <app-select
+              id="schedule-type"
+              label="Tipo de Agendamento *"
+              formControlName="scheduleType"
+              [options]="scheduleTypes"
+              placeholder="Selecione o tipo"
+              [errorMessage]="scheduleType?.invalid && scheduleType?.touched ? 'Tipo é obrigatório' : ''"
+              [invalid]="!!(scheduleType?.invalid && scheduleType?.touched)">
+            </app-select>
+          </div>
+
+          <!-- Cor -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Cor *</label>
+            <div class="flex gap-2 flex-wrap">
+              <button
+                type="button"
+                *ngFor="let colorOption of colors"
+                [class]="color?.value === colorOption.value ? 'ring-2 ring-offset-2 ring-blue-500' : ''"
+                class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-gray-400 transition"
+                [style.background-color]="colorOption.value"
+                (click)="scheduleForm.patchValue({ color: colorOption.value })"
+                [title]="colorOption.label">
+              </button>
+            </div>
+          </div>
+
+          <!-- Intervalo de Tempo -->
+          <div>
+            <app-select
+              id="schedule-interval"
+              label="Intervalo de Tempo *"
+              formControlName="timeInterval"
+              [options]="timeIntervals"
+              placeholder="Selecione o intervalo"
+              [errorMessage]="timeInterval?.invalid && timeInterval?.touched ? 'Intervalo é obrigatório' : ''"
+              [invalid]="!!(timeInterval?.invalid && timeInterval?.touched)">
+            </app-select>
+          </div>
+
+          <!-- Data de Início -->
+          <div>
+            <app-input
+              id="schedule-valid-from"
+              label="Válido a partir de *"
+              type="date"
+              formControlName="validFrom"
+              [errorMessage]="validFrom?.invalid && validFrom?.touched ? 'Data de início é obrigatória' : ''"
+              [invalid]="!!(validFrom?.invalid && validFrom?.touched)">
+            </app-input>
+          </div>
+
+          <!-- Data de Fim -->
+          <div>
+            <app-input
+              id="schedule-valid-until"
+              label="Válido até"
+              type="date"
+              formControlName="validUntil"
+              placeholder="Opcional">
+            </app-input>
+          </div>
+        </div>
+
+        <!-- Descrição -->
+        <div>
+          <app-textarea
+            id="schedule-description"
+            label="Descrição"
+            formControlName="description"
+            placeholder="Descreva a agenda..."
+            [rows]="3"
+            [maxlength]="500"
+            [showCharacterCounter]="true">
+          </app-textarea>
+        </div>
+
+        <!-- Checkboxes -->
+        <div class="flex gap-6">
+          <label class="flex items-center">
+            <input type="checkbox" formControlName="isActive" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <span class="ml-2 text-sm font-medium text-gray-700">Agenda Ativa</span>
+          </label>
+          <label class="flex items-center">
+            <input type="checkbox" formControlName="allowAppBooking" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <span class="ml-2 text-sm font-medium text-gray-700">Permitir agendamento pelo app</span>
+          </label>
+        </div>
+      </div>
+    </app-card>
+
+    <!-- Horários da Semana -->
+    <app-card>
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Horários da Semana</h3>
+        
+        <div class="space-y-3">
+          @for (day of daysOfWeek; track day.value; let i = $index) {
+            @if (scheduleDaysArray && scheduleDaysArray.length > i) {
+              <div class="border rounded-lg p-4">
+            <div class="flex items-center justify-between mb-3">
+              <label class="flex items-center">
+                <input
+                  type="checkbox"
+                  [formControl]="getDayFormControl(i, 'isActive')"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                <span class="ml-2 text-sm font-medium text-gray-700">{{ day.label }}</span>
+              </label>
+            </div>
+
+            <div *ngIf="getDayFormControl(i, 'isActive').value" class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-3">
+              <div>
+                <app-input
+                  label="Início"
+                  type="time"
+                  [formControl]="getDayFormControl(i, 'startTime')"
+                  placeholder="08:00">
+                </app-input>
+              </div>
+              <div>
+                <app-input
+                  [id]="'schedule-day-' + i + '-end'"
+                  label="Fim"
+                  type="time"
+                  [formControl]="getDayFormControl(i, 'endTime')"
+                  placeholder="18:00">
+                </app-input>
+              </div>
+              <div>
+                <app-input
+                  [id]="'schedule-day-' + i + '-break-start'"
+                  label="Início do Intervalo"
+                  type="time"
+                  [formControl]="getDayFormControl(i, 'breakStart')"
+                  placeholder="12:00">
+                </app-input>
+              </div>
+              <div>
+                <app-input
+                  [id]="'schedule-day-' + i + '-break-end'"
+                  label="Fim do Intervalo"
+                  type="time"
+                  [formControl]="getDayFormControl(i, 'breakEnd')"
+                  placeholder="13:00">
+                </app-input>
+              </div>
+            </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </app-card>
+
+    <!-- Serviços -->
+    <app-card *ngIf="availableServices.length > 0">
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Serviços Disponíveis</h3>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <label
+            *ngFor="let service of availableServices"
+            class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
+            [class.bg-blue-50]="isServiceSelected(service.id)"
+            [class.border-blue-500]="isServiceSelected(service.id)">
+            <input
+              type="checkbox"
+              [checked]="isServiceSelected(service.id)"
+              (change)="toggleService(service.id)"
+              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <span class="ml-2 text-sm font-medium text-gray-700">{{ service.name }}</span>
+          </label>
+        </div>
+      </div>
+    </app-card>
+  </form>
+</app-modal>
+

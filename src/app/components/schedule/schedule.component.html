@@ -1,4 +1,4 @@
-<app-page-container>
+<app-page-container class="schedule-page-container">
   <!-- Header -->
   <app-page-header
     title="Agendamentos"
@@ -11,130 +11,87 @@
     (actionClick)="onAppointmentAction('create', null!)">
   </app-page-header>
 
-    <!-- Filters -->
-    <app-schedule-filters
-      [filters]="filters"
-      (filtersChange)="onFiltersChange($event)"
-      (viewChange)="onViewChange($event)">
-    </app-schedule-filters>
+  <!-- Main Layout: Two Columns -->
+  <div class="flex gap-6 schedule-content">
+    <!-- Left Column: Calendar + Agenda List -->
+    <div class="w-80 flex-shrink-0 flex flex-col gap-6 overflow-y-auto self-start">
+      <!-- Calendar -->
+      <div class="flex-shrink-0">
+        <app-calendar
+          [selectedDate]="selectedDate"
+          [currentDate]="today"
+          (dateSelected)="onDateSelected($event)">
+        </app-calendar>
+      </div>
 
-    <!-- View Switcher -->
-    <div class="mb-6">
-      <div class="flex items-center gap-2">
-        <span class="text-sm font-medium text-secondary-700">Visualizar:</span>
-        <div class="flex bg-secondary-100 rounded-lg p-1">
-          <button
-            type="button"
-            [class]="currentView === 'table' ? 'bg-white text-primary-600 shadow-sm' : 'text-secondary-600 hover:text-secondary-900'"
-            class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
-            (click)="onViewChange('table')">
-            Tabela
-          </button>
-          <button
-            type="button"
-            [class]="currentView === 'list' ? 'bg-white text-primary-600 shadow-sm' : 'text-secondary-600 hover:text-secondary-900'"
-            class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
-            (click)="onViewChange('list')">
-            Lista
-          </button>
-          <button
-            type="button"
-            [class]="currentView === 'calendar' ? 'bg-white text-primary-600 shadow-sm' : 'text-secondary-600 hover:text-secondary-900'"
-            class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
-            (click)="onViewChange('calendar')">
-            Calendário
-          </button>
-        </div>
+      <!-- Agenda List -->
+      <div class="flex-shrink-0">
+        <app-agenda-list
+          [agendas]="agendas"
+          [selectedAgendas]="selectedAgendas"
+          (selectionChange)="onAgendasSelectionChange($event)"
+          (createClick)="onCreateSchedule()">
+        </app-agenda-list>
       </div>
     </div>
 
-    <!-- Content based on view -->
-    @if (currentView === 'table') {
-      <!-- Banho e Tosa Section -->
-      <div class="mb-8">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-primary-600">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
+    <!-- Right Column: Timelines -->
+    <div class="flex-1 min-w-0 self-start" [class.overflow-x-auto]="selectedAgendas.length > 1" [class.scrollbar-visible]="selectedAgendas.length > 1">
+      @if (selectedAgendas.length === 0) {
+        <!-- Empty State: No Agendas Selected -->
+        <app-card variant="elevated">
+          <div class="text-center py-16">
+            <div class="w-16 h-16 mx-auto mb-4 text-secondary-300">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-secondary-700 mb-2">Nenhuma agenda selecionada</h3>
+            <p class="text-secondary-500">Selecione uma ou mais agendas para visualizar os agendamentos.</p>
           </div>
-          <h2 class="text-xl font-semibold text-secondary-900">Banho e Tosa</h2>
-          <app-badge 
-            [text]="groomingAppointments.length.toString()"
-            variant="info"
-            size="sm">
-          </app-badge>
+        </app-card>
+      } @else {
+        <!-- Timelines Container - Horizontal Scroll -->
+        <div class="flex gap-3 h-full items-start" [class.overflow-x-auto]="selectedAgendas.length > 1">
+          @for (agenda of getSelectedAgendasForDisplay(); track agenda.id) {
+            <div [class]="selectedAgendas.length === 1 ? 'flex-1 min-w-0 flex flex-col' : 'flex-shrink-0 w-96 flex flex-col'">
+              <app-schedule-timeline
+                [appointments]="getFilteredAppointmentsForAgenda(agenda.id)"
+                [resourceName]="agenda.name"
+                [resourceCategory]="agenda.category === 'veterinary' ? 'Veterinária' : agenda.category === 'grooming' ? 'Banho e Tosa' : 'Hotel'"
+                [resourceColor]="agenda.color"
+                [startHour]="getAgendaStartHour(agenda)"
+                [endHour]="getAgendaEndHour(agenda)"
+                [currentTime]="currentTime"
+                [intervalMinutes]="getAgendaIntervalMinutes(agenda)"
+                (slotClick)="onSlotClick($event, agenda.id)"
+                (appointmentClick)="onAppointmentClick($event)">
+              </app-schedule-timeline>
+            </div>
+          }
         </div>
-        
-        <app-schedule-table
-          [appointments]="groomingAppointments"
-          [category]="'grooming'"
-          [getStatusLabel]="getStatusLabel"
-          [getStatusVariant]="getStatusVariant"
-          (actionClick)="onAppointmentAction($event.action, $event.appointment)">
-        </app-schedule-table>
-      </div>
+      }
+    </div>
+  </div>
 
-      <!-- Veterinário Section -->
-      <div class="mb-8">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-green-600">
-              <path d="M9 12l2 2 4-4"/>
-              <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
-              <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
-              <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/>
-              <path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3"/>
-            </svg>
-          </div>
-          <h2 class="text-xl font-semibold text-secondary-900">Veterinário</h2>
-          <app-badge 
-            [text]="veterinaryAppointments.length.toString()"
-            variant="success"
-            size="sm">
-          </app-badge>
-        </div>
-        
-        <app-schedule-table
-          [appointments]="veterinaryAppointments"
-          [category]="'veterinary'"
-          [getStatusLabel]="getStatusLabel"
-          [getStatusVariant]="getStatusVariant"
-          (actionClick)="onAppointmentAction($event.action, $event.appointment)">
-        </app-schedule-table>
-      </div>
-    }
+  <!-- Modais -->
+  <app-schedule-form
+    [schedule]="selectedSchedule"
+    [isOpen]="showScheduleForm"
+    (close)="onScheduleFormClose()"
+    (saved)="onScheduleFormSaved($event)">
+  </app-schedule-form>
 
-    @if (currentView === 'list') {
-      <!-- List View - To be implemented -->
-      <app-card variant="elevated">
-        <div class="text-center py-16">
-          <div class="w-16 h-16 mx-auto mb-4 text-secondary-300">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-              <path d="M9 5H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
-            </svg>
-          </div>
-          <h3 class="text-xl font-semibold text-secondary-700 mb-2">Visualização em Lista</h3>
-          <p class="text-secondary-500">Esta visualização será implementada em breve.</p>
-        </div>
-      </app-card>
-    }
-
-    @if (currentView === 'calendar') {
-      <!-- Calendar View - To be implemented -->
-      <app-card variant="elevated">
-        <div class="text-center py-16">
-          <div class="w-16 h-16 mx-auto mb-4 text-secondary-300">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-          </div>
-          <h3 class="text-xl font-semibold text-secondary-700 mb-2">Visualização em Calendário</h3>
-          <p class="text-secondary-500">Esta visualização será implementada em breve.</p>
-        </div>
-      </app-card>
-    }
+  <app-appointment-form
+    [appointment]="selectedAppointment"
+    [scheduleId]="selectedScheduleId"
+    [date]="selectedAppointmentDate"
+    [time]="selectedAppointmentTime"
+    [isOpen]="showAppointmentForm"
+    (close)="onAppointmentFormClose()"
+    (saved)="onAppointmentFormSaved($event)">
+  </app-appointment-form>
 </app-page-container>

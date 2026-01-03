@@ -1,12 +1,41 @@
 @reference "../../../styles.css";
 /* Schedule Component Styles */
-.schedule-filters {
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  border: 1px solid #e2e8f0;
+/* Override page-container for schedule page to use full height */
+/* Calculation: 100vh - header(64px) - main padding top(24px) - main padding bottom(24px) = 100vh - 112px */
+.schedule-page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 64px - 48px);
+  padding: 0 !important;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.schedule-page-container > div {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 64px - 48px) !important;
+  height: auto !important;
   padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Page header should not cause overflow */
+.schedule-page-container app-page-header {
+  flex-shrink: 0;
+}
+
+.schedule-page-container app-page-header > div {
+  margin-bottom: 1.5rem !important;
+}
+
+.schedule-content {
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 195px);
+  display: flex;
+  box-sizing: border-box;
 }
 
 .view-switcher {
@@ -45,6 +74,31 @@
 
 .section-icon.veterinary {
   @apply bg-green-100 text-green-600;
+}
+
+/* Scrollbar visible styles */
+.scrollbar-visible {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.scrollbar-visible::-webkit-scrollbar {
+  height: 12px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+  border: 2px solid #f1f5f9;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* Responsive adjustments */

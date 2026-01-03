@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="min-h-screen bg-secondary-50 p-6">
+    <div class="min-h-screen bg-secondary-50 px-6">
       <div class="max-w-7xl mx-auto">
         <ng-content></ng-content>
       </div>

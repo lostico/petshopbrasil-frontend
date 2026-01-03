@@ -16,6 +16,7 @@ export interface ScheduleAppointment {
   category: 'grooming' | 'veterinary';
   professional?: string;
   plan?: string;
+  duration?: number; // Duração do serviço em minutos
 }
 
 export interface ActionClickEvent {

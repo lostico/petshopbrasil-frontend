@@ -172,6 +172,16 @@ export class ApiEndpoints {
       `${this.BASE_URL}/files/${entityType}/${entityId}`
   };
 
+  // Schedules endpoints
+  static readonly SCHEDULES = {
+    LIST: `${this.BASE_URL}/schedules`,
+    CREATE: `${this.BASE_URL}/schedules`,
+    BY_ID: (id: string) => `${this.BASE_URL}/schedules/${id}`,
+    UPDATE: (id: string) => `${this.BASE_URL}/schedules/${id}`,
+    DELETE: (id: string) => `${this.BASE_URL}/schedules/${id}`,
+    TIMELINE: (id: string) => `${this.BASE_URL}/schedules/${id}/timeline`
+  };
+
   // Utility method to get base URL
   static getBaseUrl(): string {
     return this.BASE_URL;

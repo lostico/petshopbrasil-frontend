@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../button/button.component';
 
@@ -25,16 +25,17 @@ export interface ModalAction {
   standalone: true,
   imports: [CommonModule, ButtonComponent],
   template: `
-    <div 
-      class="modal-overlay" 
-      [class]="overlayClasses"
-      (click)="onOverlayClick($event)"
-    >
+    @if (isOpen) {
       <div 
-        class="modal-container" 
-        [class]="containerClasses"
-        (click)="$event.stopPropagation()"
+        class="modal-overlay" 
+        [class]="overlayClasses"
+        (click)="onOverlayClick($event)"
       >
+        <div 
+          class="modal-container" 
+          [class]="containerClasses"
+          (click)="$event.stopPropagation()"
+        >
         <!-- Header -->
         @if (config.title || config.showCloseButton !== false) {
           <div class="modal-header">
@@ -78,8 +79,9 @@ export interface ModalAction {
             }
           </div>
         }
+        </div>
       </div>
-    </div>
+    }
   `,
   styles: [`
     :host {
@@ -246,7 +248,7 @@ export interface ModalAction {
     }
   `]
 })
-export class ModalComponent implements OnInit, OnDestroy {
+export class ModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() config: ModalConfig = {};
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
@@ -256,6 +258,12 @@ export class ModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateClasses();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['config']) {
+      this.updateClasses();
+    }
   }
 
   ngOnDestroy(): void {

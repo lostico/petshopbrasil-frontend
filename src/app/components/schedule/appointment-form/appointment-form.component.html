@@ -1,0 +1,153 @@
+<app-modal 
+  [config]="modalConfig"
+  [isOpen]="isOpen"
+  (close)="onClose()">
+  
+  <div *ngIf="loading" class="flex items-center justify-center py-12">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="mt-4 text-gray-600">Carregando agendamento...</p>
+    </div>
+  </div>
+
+  <form [formGroup]="appointmentForm" *ngIf="!loading" class="space-y-6">
+    <!-- Informações do Agendamento -->
+    <app-card>
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informações do Agendamento</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Agenda -->
+          <div>
+            <app-select
+              id="appointment-schedule"
+              label="Agenda *"
+              formControlName="scheduleId"
+              [options]="scheduleOptions"
+              placeholder="Selecione a agenda"
+              [errorMessage]="scheduleIdControl?.invalid && scheduleIdControl?.touched ? 'Agenda é obrigatória' : ''"
+              [invalid]="!!(scheduleIdControl?.invalid && scheduleIdControl?.touched)">
+            </app-select>
+          </div>
+
+          <!-- Data -->
+          <div>
+            <app-input
+              id="appointment-date"
+              label="Data *"
+              type="date"
+              formControlName="date"
+              [errorMessage]="dateControl?.invalid && dateControl?.touched ? 'Data é obrigatória' : ''"
+              [invalid]="!!(dateControl?.invalid && dateControl?.touched)">
+            </app-input>
+          </div>
+
+          <!-- Horário -->
+          <div>
+            <app-select
+              id="appointment-time"
+              label="Horário *"
+              formControlName="time"
+              [options]="slotOptions"
+              placeholder="Selecione o horário"
+              [errorMessage]="timeControl?.invalid && timeControl?.touched ? 'Horário é obrigatório' : ''"
+              [invalid]="!!(timeControl?.invalid && timeControl?.touched)">
+            </app-select>
+            <p *ngIf="loadingSlots" class="mt-1 text-sm text-gray-500">Carregando horários disponíveis...</p>
+            <p *ngIf="!loadingSlots && !availableSlots.length && scheduleIdControl?.value && dateControl?.value" class="mt-1 text-sm text-yellow-600">
+              Nenhum horário disponível para esta data
+            </p>
+          </div>
+
+          <!-- Status (apenas em edição) -->
+          <div *ngIf="isEditMode">
+            <app-select
+              id="appointment-status"
+              label="Status"
+              formControlName="status"
+              [options]="statuses"
+              placeholder="Selecione o status">
+            </app-select>
+          </div>
+        </div>
+      </div>
+    </app-card>
+
+    <!-- Cliente e Pet -->
+    <app-card>
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Cliente e Pet</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Cliente -->
+          <div>
+            <app-select
+              id="appointment-tutor"
+              label="Cliente *"
+              formControlName="clinicTutorId"
+              [options]="tutorOptions"
+              placeholder="Selecione o cliente"
+              [errorMessage]="clinicTutorIdControl?.invalid && clinicTutorIdControl?.touched ? 'Cliente é obrigatório' : ''"
+              [invalid]="!!(clinicTutorIdControl?.invalid && clinicTutorIdControl?.touched)">
+            </app-select>
+          </div>
+
+          <!-- Pet -->
+          <div>
+            <app-select
+              id="appointment-pet"
+              label="Pet *"
+              formControlName="petId"
+              [options]="petOptions"
+              placeholder="Selecione o pet"
+              [errorMessage]="petIdControl?.invalid && petIdControl?.touched ? 'Pet é obrigatório' : ''"
+              [invalid]="!!(petIdControl?.invalid && petIdControl?.touched)">
+            </app-select>
+            <p *ngIf="!availablePets.length && clinicTutorIdControl?.value" class="mt-1 text-sm text-yellow-600">
+              Este cliente não possui pets cadastrados
+            </p>
+          </div>
+        </div>
+      </div>
+    </app-card>
+
+    <!-- Serviço -->
+    <app-card>
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Serviço</h3>
+        
+        <div>
+          <app-select
+            id="appointment-service"
+            label="Serviço *"
+            formControlName="serviceId"
+            [options]="serviceOptions"
+            placeholder="Selecione o serviço"
+            [errorMessage]="serviceIdControl?.invalid && serviceIdControl?.touched ? 'Serviço é obrigatório' : ''"
+            [invalid]="!!(serviceIdControl?.invalid && serviceIdControl?.touched)">
+          </app-select>
+        </div>
+      </div>
+    </app-card>
+
+    <!-- Observações -->
+    <app-card>
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Observações</h3>
+        
+        <div>
+          <app-textarea
+            id="appointment-notes"
+            label="Observações"
+            formControlName="notes"
+            placeholder="Adicione observações sobre o agendamento..."
+            [rows]="3"
+            [maxlength]="500"
+            [showCharacterCounter]="true">
+          </app-textarea>
+        </div>
+      </div>
+    </app-card>
+  </form>
+</app-modal>
+

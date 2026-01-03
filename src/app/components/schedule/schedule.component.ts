@@ -1,16 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 // Design System Components
 import { CardComponent } from '../../shared/components/card/card.component';
-import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { PageContainerComponent } from '../../shared/components/page-container/page-container.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { CalendarComponent } from '../../shared/components/calendar/calendar.component';
+import { AgendaListComponent, Agenda } from '../../shared/components/agenda-list/agenda-list.component';
 
 // Schedule Components
-import { ScheduleFiltersComponent } from './schedule-filters/schedule-filters.component';
-import { ScheduleTableComponent } from './schedule-table/schedule-table.component';
+import { ScheduleTimelineComponent, SlotClickEvent } from './schedule-timeline/schedule-timeline.component';
+import { ScheduleFormComponent } from './schedule-form/schedule-form.component';
+import { AppointmentFormComponent } from './appointment-form/appointment-form.component';
+
+// Services
+import { ScheduleService, TimelineResponse, Schedule, ScheduleDay } from '../../services/schedule.service';
+import { AppointmentService, Appointment } from '../../services/appointment.service';
+import { ToastService } from '../../shared/services/toast.service';
 
 export interface ScheduleAppointment {
   id: string;
@@ -22,6 +31,7 @@ export interface ScheduleAppointment {
   category: 'grooming' | 'veterinary';
   professional?: string;
   plan?: string;
+  duration?: number; // Duração do serviço em minutos
 }
 
 @Component({
@@ -31,159 +41,399 @@ export interface ScheduleAppointment {
     CommonModule,
     FormsModule,
     CardComponent,
-    BadgeComponent,
     PageContainerComponent,
     PageHeaderComponent,
-    ScheduleFiltersComponent,
-    ScheduleTableComponent
+    CalendarComponent,
+    AgendaListComponent,
+    ScheduleTimelineComponent,
+    ScheduleFormComponent,
+    AppointmentFormComponent
   ],
   templateUrl: './schedule.component.html',
   styleUrls: ['./schedule.component.css']
 })
 export class ScheduleComponent implements OnInit {
-  // View state
-  currentView: 'table' | 'list' | 'calendar' = 'table';
+  // Selected date from calendar
+  selectedDate: Date = new Date();
   
-  // Filter states
-  filters = {
-    period: 'today',
-    category: 'all',
-    professional: 'all',
-    status: 'all'
-  };
+  // Selected agendas
+  selectedAgendas: string[] = [];
+  
+  // All available agendas
+  agendas: Agenda[] = [];
 
-  // Mock data
-  groomingAppointments: ScheduleAppointment[] = [
-    {
-      id: '1',
-      time: '08:00',
-      tutorName: 'Maria Silva',
-      petName: 'Rex',
-      service: 'Banho e Tosa Completa',
-      status: 'confirmed',
-      category: 'grooming',
-      professional: 'Turno Manhã'
-    },
-    {
-      id: '2',
-      time: '09:30',
-      tutorName: 'João Santos',
-      petName: 'Luna',
-      service: 'Banho Simples',
-      status: 'in-progress',
-      category: 'grooming',
-      professional: 'Turno Manhã'
-    },
-    {
-      id: '3',
-      time: '14:00',
-      tutorName: 'Ana Costa',
-      petName: 'Max',
-      service: 'Tosa Higiênica',
-      status: 'pending',
-      category: 'grooming',
-      professional: 'Turno Tarde'
-    },
-    {
-      id: '4',
-      time: '16:30',
-      tutorName: 'Carlos Oliveira',
-      petName: 'Bella',
-      service: 'Banho e Tosa Completa',
-      status: 'confirmed',
-      category: 'grooming',
-      professional: 'Turno Tarde'
-    }
-  ];
+  // All appointments with resource/agenda mapping
+  allAppointments: (ScheduleAppointment & { resourceId: string; date: Date })[] = [];
+  
+  // Timeline configuration
+  startHour: number = 8;
+  endHour: number = 18;
+  hourHeight: number = 60;
+  currentTime: Date = new Date();
+  today: Date = new Date();
 
-  veterinaryAppointments: ScheduleAppointment[] = [
-    {
-      id: '5',
-      time: '08:30',
-      tutorName: 'Pedro Lima',
-      petName: 'Thor',
-      service: 'Consulta Clínica',
-      status: 'completed',
-      category: 'veterinary',
-      professional: 'Dr. Carlos Mendes',
-      plan: 'PetLove'
-    },
-    {
-      id: '6',
-      time: '10:00',
-      tutorName: 'Fernanda Rocha',
-      petName: 'Mimi',
-      service: 'Vacinação',
-      status: 'confirmed',
-      category: 'veterinary',
-      professional: 'Dra. Ana Paula',
-      plan: 'Particular'
-    },
-    {
-      id: '7',
-      time: '11:30',
-      tutorName: 'Roberto Alves',
-      petName: 'Zeus',
-      service: 'Exame de Sangue',
-      status: 'in-progress',
-      category: 'veterinary',
-      professional: 'Dr. Carlos Mendes',
-      plan: 'Petz'
-    },
-    {
-      id: '8',
-      time: '15:00',
-      tutorName: 'Lucia Ferreira',
-      petName: 'Nina',
-      service: 'Consulta Dermatológica',
-      status: 'pending',
-      category: 'veterinary',
-      professional: 'Dra. Ana Paula',
-      plan: 'Particular'
-    }
-  ];
+  // Timeline data cache
+  timelineData: Map<string, TimelineResponse> = new Map();
+  loadingTimelines: Set<string> = new Set();
 
-  constructor() { }
+  // Modal states
+  showScheduleForm = false;
+  showAppointmentForm = false;
+  selectedSchedule: Schedule | null = null;
+  selectedAppointment: Appointment | null = null;
+  selectedAppointmentDate: string | null = null;
+  selectedAppointmentTime: string | null = null;
+  selectedScheduleId: string | null = null;
+
+  constructor(
+    private scheduleService: ScheduleService,
+    private appointmentService: AppointmentService,
+    private toastService: ToastService
+  ) { }
 
   ngOnInit(): void {
-    // Initialize component
+    this.loadAgendas();
   }
 
-  onFiltersChange(filters: any): void {
-    this.filters = { ...filters };
-    // Apply filters logic here
+  /**
+   * Carrega as agendas da API
+   */
+  loadAgendas(): void {
+    this.scheduleService.getSchedules({ isActive: true }).subscribe({
+      next: (response) => {
+        this.agendas = response.schedules.map(schedule => this.mapScheduleToAgenda(schedule));
+        // Select all agendas by default
+        this.selectedAgendas = this.agendas.map(a => a.id);
+        // Load timeline data for selected date
+        this.loadTimelinesForSelectedDate();
+      },
+      error: (error) => {
+        console.error('Erro ao carregar agendas:', error);
+        // Em caso de erro, inicializar com array vazio
+        this.agendas = [];
+        this.selectedAgendas = [];
+      }
+    });
   }
 
-  onViewChange(view: 'table' | 'list' | 'calendar'): void {
-    this.currentView = view;
-  }
-
-  getStatusLabel(status: string): string {
-    const statusLabels: { [key: string]: string } = {
-      'confirmed': 'Confirmado',
-      'pending': 'Pendente',
-      'in-progress': 'Em Atendimento',
-      'completed': 'Finalizado',
-      'no-show': 'Não Compareceu',
-      'cancelled': 'Cancelado'
+  /**
+   * Mapeia um Schedule da API para o formato Agenda esperado pelo componente
+   */
+  private mapScheduleToAgenda(schedule: Schedule): Agenda {
+    // Mapear categoria da API para o formato esperado
+    const categoryMap: Record<string, 'veterinary' | 'grooming' | 'hotel'> = {
+      'CONSULTA': 'veterinary',
+      'CIRURGIA': 'veterinary',
+      'VACINACAO': 'veterinary',
+      'EXAME': 'veterinary',
+      'BANHO': 'grooming',
+      'TOSA': 'grooming',
+      'BANHO_E_TOSA': 'grooming',
+      'HOTEL': 'hotel',
+      'HOSPEDAGEM': 'hotel'
     };
-    return statusLabels[status] || status;
+
+    const category = categoryMap[schedule.category] || 'veterinary';
+
+    // Calcular horários de início e fim baseado nos scheduleDays
+    let startHour: number | undefined;
+    let endHour: number | undefined;
+
+    if (schedule.scheduleDays && schedule.scheduleDays.length > 0) {
+      const activeDays = schedule.scheduleDays.filter((day: ScheduleDay) => day.isActive);
+      if (activeDays.length > 0) {
+        const startTimes = activeDays.map((day: ScheduleDay) => {
+          const [hours] = day.startTime.split(':').map(Number);
+          return hours;
+        });
+        const endTimes = activeDays.map((day: ScheduleDay) => {
+          const [hours] = day.endTime.split(':').map(Number);
+          return hours;
+        });
+        startHour = Math.min(...startTimes);
+        endHour = Math.max(...endTimes);
+      }
+    }
+
+    return {
+      id: schedule.id,
+      name: schedule.name,
+      category,
+      color: schedule.color,
+      description: schedule.description || undefined,
+      startHour,
+      endHour,
+      intervalMinutes: schedule.timeInterval,
+    };
   }
 
-  getStatusVariant(status: string): 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' {
-    const statusVariants: { [key: string]: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' } = {
-      'confirmed': 'success',
-      'pending': 'warning',
-      'in-progress': 'info',
-      'completed': 'success',
-      'no-show': 'danger',
-      'cancelled': 'secondary'
-    };
-    return statusVariants[status] || 'secondary';
+  /**
+   * Carrega as timelines para todas as agendas selecionadas na data atual
+   */
+  loadTimelinesForSelectedDate(): void {
+    const dateStr = this.formatDate(this.selectedDate);
+    const selectedAgendas = this.getSelectedAgendasForDisplay();
+
+    // Limpar appointments antigos
+    this.allAppointments = [];
+
+    // Buscar timeline para cada agenda selecionada
+    const timelineRequests = selectedAgendas.map(agenda => {
+      const cacheKey = `${agenda.id}-${dateStr}`;
+      
+      // Se já está em cache, usar os dados do cache
+      if (this.timelineData.has(cacheKey)) {
+        const cachedData = this.timelineData.get(cacheKey)!;
+        return of(cachedData).pipe(
+          map(data => ({ agendaId: agenda.id, data }))
+        );
+      }
+
+      // Se já está carregando, pular
+      if (this.loadingTimelines.has(cacheKey)) {
+        return of(null).pipe(
+          map(() => ({ agendaId: agenda.id, data: null }))
+        );
+      }
+
+      // Marcar como carregando
+      this.loadingTimelines.add(cacheKey);
+
+      // Buscar da API
+      return this.scheduleService.getTimeline(agenda.id, { date: dateStr }).pipe(
+        map(data => {
+          // Salvar no cache
+          this.timelineData.set(cacheKey, data);
+          this.loadingTimelines.delete(cacheKey);
+          return { agendaId: agenda.id, data };
+        }),
+        catchError(error => {
+          console.error(`Erro ao carregar timeline para agenda ${agenda.id}:`, error);
+          this.loadingTimelines.delete(cacheKey);
+          return of({ agendaId: agenda.id, data: null });
+        })
+      );
+    });
+
+    // Executar todas as requisições
+    forkJoin(timelineRequests).subscribe(results => {
+      results.forEach(({ agendaId, data }) => {
+        if (data) {
+          this.processTimelineData(agendaId, data);
+        }
+      });
+    });
+  }
+
+  /**
+   * Processa os dados da timeline e converte para o formato de appointments
+   */
+  processTimelineData(agendaId: string, timelineData: TimelineResponse): void {
+    const appointments: (ScheduleAppointment & { resourceId: string; date: Date })[] = [];
+
+    timelineData.slots.forEach(slot => {
+      if (!slot.available && slot.appointment) {
+        const appointment = slot.appointment;
+        const appointmentDate = new Date(appointment.date);
+        
+        // Converter status da API para o formato do componente
+        let status: ScheduleAppointment['status'] = 'pending';
+        if (appointment.status === 'CONFIRMED') {
+          status = 'confirmed';
+        } else if (appointment.status === 'IN_PROGRESS') {
+          status = 'in-progress';
+        } else if (appointment.status === 'SCHEDULED') {
+          status = 'pending';
+        }
+
+        // Determinar categoria baseado no serviço
+        let category: ScheduleAppointment['category'] = 'veterinary';
+        if (appointment.service.category === 'GROOMING') {
+          category = 'grooming';
+        }
+
+        appointments.push({
+          id: appointment.id,
+          time: slot.time,
+          tutorName: appointment.clinicTutor.name,
+          petName: appointment.pet.name,
+          service: appointment.service.name,
+          status,
+          category,
+          professional: appointment.vet.name,
+          resourceId: agendaId,
+          date: appointmentDate,
+          duration: appointment.service.duration
+        });
+      }
+    });
+
+    // Adicionar aos appointments existentes (removendo duplicatas da mesma agenda)
+    this.allAppointments = this.allAppointments.filter(apt => apt.resourceId !== agendaId);
+    this.allAppointments.push(...appointments);
+  }
+
+  onDateSelected(date: Date): void {
+    this.selectedDate = new Date(date);
+    this.loadTimelinesForSelectedDate();
+  }
+
+  onAgendasSelectionChange(selectedIds: string[]): void {
+    this.selectedAgendas = selectedIds;
+    this.loadTimelinesForSelectedDate();
+  }
+
+  getFilteredAppointmentsForAgenda(agendaId: string): ScheduleAppointment[] {
+    const selectedDateStr = this.formatDate(this.selectedDate);
+    
+    return this.allAppointments
+      .filter(apt => {
+        const aptDateStr = this.formatDate(apt.date);
+        return apt.resourceId === agendaId && aptDateStr === selectedDateStr;
+      })
+      .map(apt => {
+        // Remove resourceId and date from the appointment object
+        const { resourceId, date, ...appointment } = apt;
+        return appointment;
+      });
+  }
+
+  getSelectedAgendasForDisplay(): Agenda[] {
+    return this.agendas.filter(agenda => this.selectedAgendas.includes(agenda.id));
+  }
+
+  getAgendaStartHour(agenda: Agenda): number {
+    // Tentar obter do cache de timeline primeiro
+    const dateStr = this.formatDate(this.selectedDate);
+    const cacheKey = `${agenda.id}-${dateStr}`;
+    const timelineData = this.timelineData.get(cacheKey);
+    
+    if (timelineData?.workingHours?.start) {
+      const [hours] = timelineData.workingHours.start.split(':').map(Number);
+      return hours;
+    }
+    
+    return agenda.startHour ?? this.startHour;
+  }
+
+  getAgendaEndHour(agenda: Agenda): number {
+    // Tentar obter do cache de timeline primeiro
+    const dateStr = this.formatDate(this.selectedDate);
+    const cacheKey = `${agenda.id}-${dateStr}`;
+    const timelineData = this.timelineData.get(cacheKey);
+    
+    if (timelineData?.workingHours?.end) {
+      const [hours] = timelineData.workingHours.end.split(':').map(Number);
+      return hours;
+    }
+    
+    return agenda.endHour ?? this.endHour;
+  }
+
+  getAgendaHourHeight(agenda: Agenda): number | undefined {
+    return agenda.hourHeight;
+  }
+
+  getAgendaMinHourHeight(agenda: Agenda): number {
+    return agenda.minHourHeight ?? 40;
+  }
+
+  getAgendaMaxHourHeight(agenda: Agenda): number {
+    return agenda.maxHourHeight ?? 120;
+  }
+
+  getAgendaIntervalMinutes(agenda: Agenda): number {
+    // Tentar obter do cache de timeline primeiro
+    const dateStr = this.formatDate(this.selectedDate);
+    const cacheKey = `${agenda.id}-${dateStr}`;
+    const timelineData = this.timelineData.get(cacheKey);
+    
+    if (timelineData?.timeInterval) {
+      return timelineData.timeInterval;
+    }
+    
+    return agenda.intervalMinutes ?? 15;
+  }
+
+  getAgendaMinIntervalHeight(agenda: Agenda): number {
+    return agenda.minIntervalHeight ?? 15;
+  }
+
+  formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  onSlotClick(event: SlotClickEvent, agendaId: string): void {
+    this.selectedScheduleId = agendaId;
+    this.selectedAppointmentDate = this.formatDate(this.selectedDate);
+    this.selectedAppointmentTime = `${String(event.hour).padStart(2, '0')}:${String(event.minute).padStart(2, '0')}`;
+    this.showAppointmentForm = true;
+  }
+
+  onAppointmentClick(appointment: ScheduleAppointment): void {
+    // Buscar o agendamento completo da API
+    this.appointmentService.getAppointmentById(appointment.id)
+      .subscribe({
+        next: (response) => {
+          // Abrir modal de edição
+          this.selectedAppointment = response.appointment;
+          this.selectedScheduleId = null;
+          this.selectedAppointmentDate = null;
+          this.selectedAppointmentTime = null;
+          this.showAppointmentForm = true;
+        },
+        error: (error) => {
+          this.toastService.showError('Erro ao carregar agendamento.');
+          console.error('Erro ao carregar agendamento:', error);
+        }
+      });
   }
 
   onAppointmentAction(action: string, appointment: ScheduleAppointment | null): void {
-    console.log('Action:', action, 'Appointment:', appointment);
-    // Implement action logic here
+    if (action === 'create') {
+      this.selectedAppointment = null;
+      this.selectedScheduleId = null;
+      this.selectedAppointmentDate = this.formatDate(this.selectedDate);
+      this.selectedAppointmentTime = null;
+      this.showAppointmentForm = true;
+    }
+  }
+
+  onScheduleFormClose(): void {
+    this.showScheduleForm = false;
+    this.selectedSchedule = null;
+  }
+
+  onScheduleFormSaved(schedule: Schedule): void {
+    // Recarregar agendas
+    this.loadAgendas();
+    this.onScheduleFormClose();
+  }
+
+  onAppointmentFormClose(): void {
+    this.showAppointmentForm = false;
+    this.selectedAppointment = null;
+    this.selectedScheduleId = null;
+    this.selectedAppointmentDate = null;
+    this.selectedAppointmentTime = null;
+  }
+
+  onAppointmentFormSaved(appointment: Appointment): void {
+    // Recarregar timelines
+    this.loadTimelinesForSelectedDate();
+    this.onAppointmentFormClose();
+  }
+
+  onCreateSchedule(): void {
+    this.selectedSchedule = null;
+    this.showScheduleForm = true;
+  }
+
+  onEditSchedule(schedule: Schedule): void {
+    this.selectedSchedule = schedule;
+    this.showScheduleForm = true;
   }
 }
