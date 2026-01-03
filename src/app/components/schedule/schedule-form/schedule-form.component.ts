@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, OnChanges, SimpleChanges, AfterViewInit, 
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { ScheduleService, Schedule, CreateScheduleRequest, UpdateScheduleRequest } from '../../../services/schedule.service';
+import { ScheduleService as ScheduleServiceType, Schedule, CreateScheduleRequest, UpdateScheduleRequest, ScheduleDay, ScheduleService } from '../../../services/schedule.service';
 import { ServiceService, Service } from '../../../services/service.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { InputComponent } from '../../../shared/components/input/input.component';
@@ -71,7 +71,10 @@ const COLORS = [
   styleUrls: ['./schedule-form.component.css']
 })
 export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, AfterViewInit {
+  private _schedule: Schedule | null = null;
+  
   @Input() schedule: Schedule | null = null;
+  
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
   @Output() saved = new EventEmitter<Schedule>();
@@ -81,6 +84,7 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
   submitting = false;
   isEditMode = false;
   availableServices: Service[] = [];
+  private lastLoadedScheduleId: string | null = null;
 
   modalConfig: ModalConfig = {
     title: 'Nova Agenda',
@@ -102,7 +106,7 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
 
   constructor(
     private fb: FormBuilder,
-    private scheduleService: ScheduleService,
+    private scheduleService: ScheduleServiceType,
     private serviceService: ServiceService,
     private toastService: ToastService,
     private cdr: ChangeDetectorRef
@@ -130,6 +134,13 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
           this.updateModalConfig();
         });
     }
+    
+    // Verificar se o modal já está aberto com um schedule ao inicializar
+    if (this.isOpen && this.schedule && !this.loading) {
+      setTimeout(() => {
+        this.loadScheduleData();
+      }, 0);
+    }
   }
 
   ngOnDestroy(): void {
@@ -139,18 +150,52 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['schedule'] || changes['isOpen']) {
+      // Verificar se o modal acabou de abrir
+      const modalJustOpened = changes['isOpen'] && 
+        changes['isOpen'].previousValue === false && 
+        changes['isOpen'].currentValue === true;
+      
+      // Verificar se o schedule mudou
+      const scheduleChanged = changes['schedule'] && 
+        changes['schedule'].currentValue &&
+        (changes['schedule'].firstChange || 
+         (changes['schedule'].previousValue?.id !== changes['schedule'].currentValue?.id));
+      
+      // Se o modal está aberto
       if (this.isOpen) {
         if (this.schedule) {
+          // Modal aberto com schedule = modo de edição
           this.isEditMode = true;
           this.modalConfig.title = 'Editar Agenda';
-          this.loadScheduleData();
+          
+          // Quando o modal abre com um schedule OU quando o schedule muda enquanto o modal está aberto,
+          // carregar os dados se ainda não foram carregados para este schedule
+          const shouldLoad = (modalJustOpened || scheduleChanged) && 
+            this.schedule.id !== this.lastLoadedScheduleId;
+          
+          if (shouldLoad) {
+            // Aguardar para garantir que o formulário esteja pronto
+            setTimeout(() => {
+              // Verificar novamente se ainda precisa carregar e se o modal ainda está aberto
+              if (this.schedule && this.isOpen && this.schedule.id !== this.lastLoadedScheduleId && !this.loading) {
+                this.loadScheduleData();
+              }
+            }, 100);
+          }
         } else {
+          // Modal aberto sem schedule = modo de criação
           this.isEditMode = false;
           this.modalConfig.title = 'Nova Agenda';
           this.resetForm();
+          this.lastLoadedScheduleId = null;
         }
-        this.updateModalConfig();
+      } else {
+        // Modal fechado - resetar modo de edição e flag
+        this.isEditMode = false;
+        this.lastLoadedScheduleId = null;
       }
+      
+      this.updateModalConfig();
     }
   }
 
@@ -221,7 +266,14 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
   }
 
   private loadScheduleData(): void {
-    if (!this.schedule) return;
+    if (!this.schedule || this.loading) {
+      return;
+    }
+
+    // Evitar carregar o mesmo schedule múltiplas vezes
+    if (this.lastLoadedScheduleId === this.schedule.id) {
+      return;
+    }
 
     this.loading = true;
 
@@ -229,7 +281,11 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          const schedule = response.schedule;
+          // A resposta já é o objeto Schedule diretamente, não response.schedule
+          const schedule = (response as any).schedule || response as any;
+          
+          // Marcar que este schedule foi carregado APÓS o sucesso
+          this.lastLoadedScheduleId = schedule.id;
           
           // Preencher formulário básico
           this.scheduleForm.patchValue({
@@ -251,7 +307,7 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
           daysArray.clear();
           
           DAYS_OF_WEEK.forEach(day => {
-            const scheduleDay = schedule.scheduleDays?.find(sd => sd.dayOfWeek === day.value);
+            const scheduleDay = schedule.scheduleDays?.find((sd: ScheduleDay) => sd.dayOfWeek === day.value);
             daysArray.push(this.fb.group({
               dayOfWeek: [day.value],
               isActive: [scheduleDay?.isActive || false],
@@ -267,7 +323,7 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
           const serviceIdsArray = this.scheduleForm.get('serviceIds') as FormArray;
           serviceIdsArray.clear();
           if (schedule.scheduleServices) {
-            schedule.scheduleServices.forEach(ss => {
+            schedule.scheduleServices.forEach((ss: ScheduleService) => {
               if (ss.isActive) {
                 serviceIdsArray.push(this.fb.control(ss.serviceId));
               }
@@ -275,10 +331,13 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
           }
 
           this.loading = false;
+          // Forçar detecção de mudanças após preencher o formulário
+          this.cdr.detectChanges();
         },
         error: (error) => {
           this.toastService.showError('Erro ao carregar agenda. Tente novamente.');
           this.loading = false;
+          this.lastLoadedScheduleId = null; // Resetar em caso de erro para permitir nova tentativa
           console.error('Erro ao carregar agenda:', error);
         }
       });
@@ -300,6 +359,9 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
       scheduleDays: [],
       serviceIds: []
     });
+    // Limpar o FormArray de serviceIds explicitamente
+    const serviceIdsArray = this.scheduleForm.get('serviceIds') as FormArray;
+    serviceIdsArray.clear();
     this.initScheduleDays();
   }
 
@@ -399,8 +461,8 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
     this.submitting = true;
     const formValue = this.scheduleForm.value;
 
-    // Preparar dados
-    const scheduleData: CreateScheduleRequest | UpdateScheduleRequest = {
+    // Preparar dados base
+    const baseData = {
       name: formValue.name,
       description: formValue.description || null,
       scheduleType: formValue.scheduleType,
@@ -420,14 +482,30 @@ export class ScheduleFormComponent implements OnInit, OnDestroy, OnChanges, Afte
         breakStart: day.breakStart || null,
         breakEnd: day.breakEnd || null,
         maxAppointments: day.maxAppointments || null
-      })),
-      serviceIds: formValue.serviceIds || []
+      }))
     };
 
+    // Filtrar valores null, undefined ou vazios do array de serviceIds
+    const validServiceIds = (formValue.serviceIds || [])
+      .filter((serviceId: any) => serviceId != null && serviceId !== '' && serviceId !== undefined);
+
     if (this.isEditMode && this.schedule) {
-      this.updateSchedule(scheduleData as UpdateScheduleRequest);
+      // Para atualização, converter serviceIds para scheduleServices conforme documentação
+      const updateData: UpdateScheduleRequest = {
+        ...baseData,
+        scheduleServices: validServiceIds.map((serviceId: string) => ({
+          serviceId: serviceId,
+          isActive: true
+        }))
+      };
+      this.updateSchedule(updateData);
     } else {
-      this.createSchedule(scheduleData as CreateScheduleRequest);
+      // Para criação, usar serviceIds
+      const createData: CreateScheduleRequest = {
+        ...baseData,
+        serviceIds: validServiceIds
+      };
+      this.createSchedule(createData);
     }
   }
 

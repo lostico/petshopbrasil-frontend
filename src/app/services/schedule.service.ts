@@ -198,6 +198,15 @@ export interface UpdateScheduleRequest {
     breakEnd?: string | null; // HH:mm
     maxAppointments?: number | null;
   }[];
+  scheduleServices?: Array<{
+    serviceId: string;
+    isActive: boolean;
+  }>;
+  scheduleSpecialties?: Array<{
+    specialty: string;
+    isActive: boolean;
+  }>;
+  // Mantido para compatibilidade com código existente
   serviceIds?: string[];
   specialties?: string[];
 }

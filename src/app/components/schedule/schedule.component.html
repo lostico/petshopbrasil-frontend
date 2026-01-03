@@ -30,7 +30,8 @@
           [agendas]="agendas"
           [selectedAgendas]="selectedAgendas"
           (selectionChange)="onAgendasSelectionChange($event)"
-          (createClick)="onCreateSchedule()">
+          (createClick)="onCreateSchedule()"
+          (editClick)="onEditAgenda($event)">
         </app-agenda-list>
       </div>
     </div>

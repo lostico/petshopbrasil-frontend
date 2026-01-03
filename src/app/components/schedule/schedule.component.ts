@@ -449,4 +449,31 @@ export class ScheduleComponent implements OnInit {
     this.selectedSchedule = schedule;
     this.showScheduleForm = true;
   }
+
+  onEditAgenda(agenda: Agenda): void {
+    // Primeiro fechar o modal se estiver aberto e limpar o schedule
+    this.showScheduleForm = false;
+    this.selectedSchedule = null;
+    
+    // Buscar a agenda completa da API para editar
+    this.scheduleService.getScheduleById(agenda.id)
+      .subscribe({
+        next: (response) => {
+          // A resposta já é o objeto Schedule diretamente, não response.schedule
+          // Definir o schedule primeiro e aguardar para garantir que o Angular detecte a mudança
+          this.selectedSchedule = (response as any).schedule || response as any;
+          
+          // Aguardar para garantir que o Angular processe a mudança no schedule
+          // antes de abrir o modal
+          setTimeout(() => {
+            // Agora abrir o modal - o schedule já está definido
+            this.showScheduleForm = true;
+          }, 50);
+        },
+        error: (error) => {
+          this.toastService.showError('Erro ao carregar agenda para edição.');
+          console.error('Erro ao carregar agenda:', error);
+        }
+      });
+  }
 }

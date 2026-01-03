@@ -67,42 +67,57 @@ interface GroupedAgendas {
             <!-- Itens da Categoria -->
             <div class="space-y-2">
               @for (agenda of group.agendas; track agenda.id) {
-                <label
-                  class="flex items-center gap-3 p-3 rounded-md cursor-pointer transition-colors hover:bg-secondary-50"
+                <div
+                  class="flex items-center gap-3 p-3 rounded-md transition-colors hover:bg-secondary-50"
                   [class.bg-primary-50]="isSelected(agenda.id)">
                   <!-- Checkbox Customizado -->
-                  <div class="relative flex items-center">
-                    <input
-                      type="checkbox"
-                      [checked]="isSelected(agenda.id)"
-                      (change)="toggleSelection(agenda.id)"
-                      class="sr-only"
-                      [id]="'agenda-' + agenda.id">
-                    <div
-                      class="w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center"
-                      [class.bg-primary-600]="isSelected(agenda.id)"
-                      [class.border-primary-600]="isSelected(agenda.id)"
-                      [class.border-secondary-300]="!isSelected(agenda.id)"
-                      [class.hover:border-primary-500]="!isSelected(agenda.id)">
-                      @if (isSelected(agenda.id)) {
-                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                      }
+                  <label class="flex items-center gap-3 flex-1 cursor-pointer">
+                    <div class="relative flex items-center">
+                      <input
+                        type="checkbox"
+                        [checked]="isSelected(agenda.id)"
+                        (change)="toggleSelection(agenda.id)"
+                        (click)="$event.stopPropagation()"
+                        class="sr-only"
+                        [id]="'agenda-' + agenda.id">
+                      <div
+                        class="w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center"
+                        [class.bg-primary-600]="isSelected(agenda.id)"
+                        [class.border-primary-600]="isSelected(agenda.id)"
+                        [class.border-secondary-300]="!isSelected(agenda.id)"
+                        [class.hover:border-primary-500]="!isSelected(agenda.id)">
+                        @if (isSelected(agenda.id)) {
+                          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                        }
+                      </div>
                     </div>
-                  </div>
 
-                  <!-- Círculo Colorido -->
-                  <div
-                    class="w-3 h-3 rounded-full flex-shrink-0"
-                    [style.background-color]="agenda.color">
-                  </div>
+                    <!-- Círculo Colorido -->
+                    <div
+                      class="w-3 h-3 rounded-full flex-shrink-0"
+                      [style.background-color]="agenda.color">
+                    </div>
 
-                  <!-- Nome da Agenda -->
-                  <span class="flex-1 text-sm font-medium text-secondary-900">
-                    {{ agenda.name }}
-                  </span>
-                </label>
+                    <!-- Nome da Agenda -->
+                    <span class="flex-1 text-sm font-medium text-secondary-900">
+                      {{ agenda.name }}
+                    </span>
+                  </label>
+
+                  <!-- Botão de Editar -->
+                  <button
+                    type="button"
+                    (click)="onEditClick(agenda); $event.stopPropagation()"
+                    class="flex items-center justify-center w-8 h-8 rounded-md text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                    aria-label="Editar agenda"
+                    title="Editar agenda">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                </div>
               }
             </div>
           </div>
@@ -125,6 +140,7 @@ export class AgendaListComponent implements OnInit, OnChanges {
 
   @Output() selectionChange = new EventEmitter<string[]>();
   @Output() createClick = new EventEmitter<void>();
+  @Output() editClick = new EventEmitter<Agenda>();
 
   private internalSelected: string[] = [];
   groupedAgendas: GroupedAgendas[] = [];
@@ -210,5 +226,9 @@ export class AgendaListComponent implements OnInit, OnChanges {
 
   onCreateClick(): void {
     this.createClick.emit();
+  }
+
+  onEditClick(agenda: Agenda): void {
+    this.editClick.emit(agenda);
   }
 }
