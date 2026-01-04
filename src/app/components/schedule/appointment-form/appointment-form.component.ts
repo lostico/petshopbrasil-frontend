@@ -9,7 +9,6 @@ import { ServiceService, Service } from '../../../services/service.service';
 import { PetService, Pet } from '../../../services/pet.service';
 import { TutorService, Tutor } from '../../../services/tutor.service';
 import { ToastService } from '../../../shared/services/toast.service';
-import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { InputComponent } from '../../../shared/components/input/input.component';
 import { TextareaComponent } from '../../../shared/components/textarea/textarea.component';
 import { SelectComponent } from '../../../shared/components/select/select.component';
@@ -31,7 +30,6 @@ const APPOINTMENT_STATUSES = [
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    ButtonComponent,
     InputComponent,
     TextareaComponent,
     SelectComponent,
@@ -61,6 +59,8 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
   availableSlots: string[] = [];
   loadingSlots = false;
   private isInitializing = false; // Flag para evitar chamadas durante inicialização
+  private isLoadingSlots = false; // Flag para evitar múltiplas chamadas simultâneas de loadAvailableSlots
+  private lastSlotRequest: { scheduleId: string; date: string; serviceId?: string } | null = null; // Cache da última requisição
 
   modalConfig: ModalConfig = {
     title: 'Novo Agendamento',
@@ -91,6 +91,20 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
     this.loadSchedules();
     // Não carregar todos os serviços - serão carregados baseados na agenda selecionada
     this.updateModalConfig();
+    
+    // Observar mudanças no status do formulário para atualizar o botão
+    this.appointmentForm.statusChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updateModalConfig();
+      });
+    
+    // Observar mudanças nos valores do formulário para atualizar o botão
+    this.appointmentForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updateModalConfig();
+      });
   }
 
   ngOnDestroy(): void {
@@ -147,8 +161,8 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
 
   private initForm(): void {
     this.appointmentForm = this.fb.group({
-      scheduleId: ['', [Validators.required]],
-      date: ['', [Validators.required]],
+      scheduleId: [''], // Opcional conforme documentação da API
+      date: ['', [Validators.required, this.dateNotInPastValidator.bind(this)]],
       time: [{ value: '', disabled: true }, [Validators.required]], // Desabilitado inicialmente
       petId: [{ value: '', disabled: true }, [Validators.required]], // Desabilitado inicialmente
       clinicTutorId: ['', [Validators.required]],
@@ -164,8 +178,45 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
       .subscribe(() => this.onScheduleChange());
 
     this.appointmentForm.get('date')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.onDateChange());
+      .pipe(
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        // Evitar chamadas durante inicialização
+        if (this.isInitializing) {
+          return;
+        }
+        // Revalidar data quando mudar (sem emitEvent para evitar loop)
+        const dateControl = this.appointmentForm.get('date');
+        if (dateControl) {
+          const currentValue = dateControl.value;
+          dateControl.updateValueAndValidity({ emitEvent: false });
+          // Restaurar valor se foi alterado pela validação
+          if (dateControl.value !== currentValue) {
+            dateControl.setValue(currentValue, { emitEvent: false });
+          }
+        }
+        this.onDateChange();
+      });
+
+    // Revalidar data quando o horário mudar (para validar data+hora combinadas)
+    this.appointmentForm.get('time')?.valueChanges
+      .pipe(
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        // Evitar chamadas durante inicialização
+        if (this.isInitializing) {
+          return;
+        }
+        // Revalidar data sem emitir evento para evitar loop
+        const dateControl = this.appointmentForm.get('date');
+        if (dateControl && dateControl.value) {
+          dateControl.updateValueAndValidity({ emitEvent: false });
+        }
+      });
 
     this.appointmentForm.get('clinicTutorId')?.valueChanges
       .pipe(
@@ -194,7 +245,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
       const serviceControl = this.appointmentForm.get('serviceId');
       if (!keepCurrentValue) {
         serviceControl?.disable();
-        serviceControl?.setValue('');
+        serviceControl?.setValue('', { emitEvent: false });
       }
       return;
     }
@@ -210,7 +261,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
             this.availableServices = [];
             const serviceControl = this.appointmentForm.get('serviceId');
             serviceControl?.disable();
-            serviceControl?.setValue('');
+            serviceControl?.setValue('', { emitEvent: false });
             return;
           }
 
@@ -222,7 +273,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
             this.availableServices = [];
             const serviceControl = this.appointmentForm.get('serviceId');
             serviceControl?.disable();
-            serviceControl?.setValue('');
+            serviceControl?.setValue('', { emitEvent: false });
             return;
           }
           
@@ -256,11 +307,17 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
           
           if (this.availableServices.length > 0) {
             // Sempre habilitar se houver serviços disponíveis
-            serviceControl.enable();
+            if (serviceControl.disabled) {
+              serviceControl.enable({ emitEvent: false });
+              serviceControl.updateValueAndValidity({ emitEvent: false });
+            }
             // Se o serviço atual não está na lista, limpar (exceto em modo de edição)
             if (!keepCurrentValue && currentServiceId && !this.availableServices.find(s => s.id === currentServiceId)) {
-              serviceControl.setValue('');
+              serviceControl.setValue('', { emitEvent: false });
             }
+            // Atualizar status do formulário
+            this.appointmentForm.updateValueAndValidity();
+            this.updateModalConfig();
           } else {
             // Se não há serviços mas estamos em modo de edição, manter habilitado
             if (keepCurrentValue && currentServiceId) {
@@ -268,7 +325,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
             } else {
               serviceControl.disable();
               if (!keepCurrentValue) {
-                serviceControl.setValue('');
+                serviceControl.setValue('', { emitEvent: false });
               }
             }
           }
@@ -280,7 +337,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
           // Em modo de edição, manter habilitado se já houver valor
           if (!keepCurrentValue || !serviceControl?.value) {
             serviceControl?.disable();
-            serviceControl?.setValue('');
+            serviceControl?.setValue('', { emitEvent: false });
           }
         }
       });
@@ -308,7 +365,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
       const petControl = this.appointmentForm.get('petId');
       if (!keepCurrentValue) {
         petControl?.disable();
-        petControl?.setValue('');
+        petControl?.setValue('', { emitEvent: false });
       }
       return;
     }
@@ -323,18 +380,24 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
           const currentPetId = petControl?.value;
           
           if (this.availablePets.length > 0) {
-            petControl?.enable();
+            if (petControl && petControl.disabled) {
+              petControl.enable({ emitEvent: false });
+              petControl.updateValueAndValidity({ emitEvent: false });
+            }
             // Se não há valor atual ou o valor atual não está na lista, limpar
             if (!keepCurrentValue && (!currentPetId || !this.availablePets.find(p => p.id === currentPetId))) {
-              petControl?.setValue('');
+              petControl?.setValue('', { emitEvent: false });
             }
+            // Atualizar status do formulário
+            this.appointmentForm.updateValueAndValidity();
+            this.updateModalConfig();
           } else {
             // Se não há pets mas estamos em modo de edição, manter habilitado
             if (keepCurrentValue && currentPetId) {
               petControl?.enable();
             } else {
               petControl?.disable();
-              petControl?.setValue('');
+              petControl?.setValue('', { emitEvent: false });
             }
           }
         },
@@ -345,13 +408,23 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
           // Em modo de edição, manter habilitado se já houver valor
           if (!keepCurrentValue || !petControl?.value) {
             petControl?.disable();
-            petControl?.setValue('');
+            petControl?.setValue('', { emitEvent: false });
           }
         }
       });
   }
 
   private loadAvailableSlots(): void {
+    // Evitar chamadas durante inicialização
+    if (this.isInitializing) {
+      return;
+    }
+
+    // Evitar múltiplas chamadas simultâneas
+    if (this.isLoadingSlots) {
+      return;
+    }
+
     const scheduleId = this.appointmentForm.get('scheduleId')?.value;
     const date = this.appointmentForm.get('date')?.value;
     const serviceId = this.appointmentForm.get('serviceId')?.value;
@@ -364,21 +437,37 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
       if (!this.time && !currentTimeValue) {
         timeControl?.disable();
       }
+      this.lastSlotRequest = null;
       return;
     }
 
+    // Verificar se é a mesma requisição da última vez
+    const currentRequest = { scheduleId, date, serviceId: serviceId || undefined };
+    if (this.lastSlotRequest && 
+        this.lastSlotRequest.scheduleId === currentRequest.scheduleId &&
+        this.lastSlotRequest.date === currentRequest.date &&
+        this.lastSlotRequest.serviceId === currentRequest.serviceId) {
+      // Mesma requisição, não fazer chamada novamente
+      return;
+    }
+
+    this.isLoadingSlots = true;
     this.loadingSlots = true;
+    this.lastSlotRequest = currentRequest;
+
     this.scheduleService.getAvailableSlots(scheduleId, date, serviceId || undefined)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.isLoadingSlots = false;
+          this.loadingSlots = false;
+
           // Verificar se a agenda funciona no dia
           if (response.available === false) {
             this.availableSlots = [];
-            this.loadingSlots = false;
             const timeControl = this.appointmentForm.get('time');
             timeControl?.disable();
-            timeControl?.setValue('');
+            timeControl?.setValue('', { emitEvent: false });
             return;
           }
 
@@ -393,33 +482,45 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
             this.availableSlots.sort(); // Ordenar novamente
           }
           
-          this.loadingSlots = false;
-          
           // Habilitar campo de horário se houver slots ou se houver um horário pré-selecionado
           const timeControl = this.appointmentForm.get('time');
           if (this.availableSlots.length > 0 || preselectedTime) {
-            timeControl?.enable();
-            // Se houver um horário pré-selecionado, garantir que está selecionado
-            if (preselectedTime) {
-              timeControl?.setValue(preselectedTime);
+            if (timeControl && timeControl.disabled) {
+              timeControl.enable({ emitEvent: false });
+              timeControl.updateValueAndValidity({ emitEvent: false });
             }
+            // Se houver um horário pré-selecionado, garantir que está selecionado (sem emitir evento)
+            if (preselectedTime && timeControl?.value !== preselectedTime) {
+              timeControl?.setValue(preselectedTime, { emitEvent: false });
+            }
+            // Atualizar status do formulário
+            this.appointmentForm.updateValueAndValidity();
+            this.updateModalConfig();
           } else {
             timeControl?.disable();
-            timeControl?.setValue('');
+            if (timeControl?.value) {
+              timeControl?.setValue('', { emitEvent: false });
+            }
           }
         },
         error: (error) => {
+          this.isLoadingSlots = false;
+          this.loadingSlots = false;
           console.error('Erro ao carregar horários disponíveis:', error);
           this.availableSlots = [];
-          this.loadingSlots = false;
           const timeControl = this.appointmentForm.get('time');
           // Se houver um horário pré-selecionado, manter habilitado
           if (this.time) {
             this.availableSlots = [this.time];
             timeControl?.enable();
-            timeControl?.setValue(this.time);
+            if (timeControl?.value !== this.time) {
+              timeControl?.setValue(this.time, { emitEvent: false });
+            }
           } else {
             timeControl?.disable();
+            if (timeControl?.value) {
+              timeControl?.setValue('', { emitEvent: false });
+            }
           }
         }
       });
@@ -433,6 +534,9 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
     
     const scheduleId = this.appointmentForm.get('scheduleId')?.value;
     
+    // Resetar cache de slots quando agenda mudar
+    this.lastSlotRequest = null;
+    
     // Carregar serviços da agenda selecionada (a limpeza será feita dentro do método)
     this.loadServicesForSchedule(scheduleId);
     
@@ -445,13 +549,22 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
     if (this.isInitializing) {
       return;
     }
+    
+    // Resetar cache de slots quando data mudar
+    this.lastSlotRequest = null;
+    
     this.loadAvailableSlots();
   }
 
   onTutorChange(): void {
+    // Evitar chamadas durante inicialização
+    if (this.isInitializing) {
+      return;
+    }
+
     const tutorId = this.appointmentForm.get('clinicTutorId')?.value;
-    // Limpar pet selecionado quando trocar tutor
-    this.appointmentForm.patchValue({ petId: '' });
+    // Limpar pet selecionado quando trocar tutor (sem emitir evento para evitar loops)
+    this.appointmentForm.patchValue({ petId: '' }, { emitEvent: false });
     // Desabilitar temporariamente enquanto carrega os pets
     const petControl = this.appointmentForm.get('petId');
     petControl?.disable();
@@ -469,9 +582,9 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
       this.availableSlots.sort();
     }
 
-    // Habilitar o campo e definir o valor
+    // Habilitar o campo e definir o valor (sem emitir evento para evitar loops)
     timeControl.enable();
-    timeControl.setValue(time);
+    timeControl.setValue(time, { emitEvent: false });
   }
 
   private loadAppointmentData(): void {
@@ -502,6 +615,10 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
           // Preencher formulário
           const appointmentDate = new Date(appointment.date);
           
+          // Extrair data e hora do formato ISO 8601
+          const dateStr = appointmentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+          const timeStr = appointment.time || appointmentDate.toTimeString().slice(0, 5); // HH:mm
+          
           // Habilitar campos antes de preencher (em modo de edição)
           this.appointmentForm.get('time')?.enable();
           // petId será habilitado após carregar os pets
@@ -509,9 +626,9 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
           
           // Usar emitEvent: false para evitar disparar valueChanges durante carregamento
           this.appointmentForm.patchValue({
-            scheduleId: appointment.scheduleId,
-            date: appointmentDate.toISOString().split('T')[0],
-            time: appointment.time,
+            scheduleId: appointment.scheduleId || '',
+            date: dateStr,
+            time: timeStr,
             petId: appointment.petId,
             clinicTutorId: appointment.clinicTutorId,
             serviceId: appointment.serviceId,
@@ -519,6 +636,10 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
             status: appointment.status,
             notes: appointment.notes || ''
           }, { emitEvent: false });
+
+          // Atualizar status do formulário após preencher
+          this.appointmentForm.updateValueAndValidity();
+          this.updateModalConfig();
 
           this.loadAvailableSlots();
           this.isInitializing = false; // Marcar fim da inicialização
@@ -555,11 +676,16 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
     const timeControl = this.appointmentForm.get('time');
     if (this.time) {
       this.availableSlots = [this.time];
-      timeControl?.enable();
+      if (timeControl && timeControl.disabled) {
+        timeControl.enable({ emitEvent: false });
+        timeControl.updateValueAndValidity({ emitEvent: false });
+      }
     } else {
       timeControl?.disable();
     }
     this.appointmentForm.get('petId')?.disable();
+    // Atualizar status do formulário
+    this.appointmentForm.updateValueAndValidity();
     // serviceId será habilitado/desabilitado quando a agenda for selecionada
     // Não desabilitar aqui se já houver uma agenda pré-selecionada
     if (!this.scheduleId) {
@@ -570,20 +696,122 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private updateModalConfig(): void {
-    this.modalConfig.footerActions = [
-      {
-        label: 'Cancelar',
-        variant: 'secondary',
-        onClick: () => this.onClose()
-      },
-      {
-        label: this.isEditMode ? 'Atualizar' : 'Criar',
-        variant: 'primary',
-        disabled: this.appointmentForm.invalid || this.submitting,
-        loading: this.submitting,
-        onClick: () => this.onSubmit()
+    // Usar setTimeout para garantir que as mudanças no formulário foram processadas
+    setTimeout(() => {
+      const isFormValid = this.isFormValid();
+      
+      this.modalConfig.footerActions = [
+        {
+          label: 'Cancelar',
+          variant: 'secondary',
+          onClick: () => this.onClose()
+        },
+        {
+          label: this.isEditMode ? 'Atualizar' : 'Criar',
+          variant: 'primary',
+          disabled: !isFormValid || this.submitting,
+          loading: this.submitting,
+          onClick: () => this.onSubmit()
+        }
+      ];
+    }, 0);
+  }
+
+
+  /**
+   * Verifica se o formulário está válido, considerando campos desabilitados
+   * Campos desabilitados não são validados pelo Angular, então precisamos verificar manualmente
+   */
+  private isFormValid(): boolean {
+    if (!this.appointmentForm) {
+      return false;
+    }
+
+    // Verificar campos obrigatórios
+    const date = this.appointmentForm.get('date');
+    const time = this.appointmentForm.get('time');
+    const petId = this.appointmentForm.get('petId');
+    const clinicTutorId = this.appointmentForm.get('clinicTutorId');
+    const serviceId = this.appointmentForm.get('serviceId');
+
+    // Data é obrigatória e deve ter valor válido
+    if (!date || !date.value) {
+      return false;
+    }
+    // Verificar se há erro de validação (exceto se não foi tocado ainda)
+    if (date.invalid && date.errors && !date.errors['dateInPast']) {
+      // Se tem erro que não é dateInPast, não é válido
+      return false;
+    }
+
+    // Cliente é obrigatório e deve ter valor
+    if (!clinicTutorId || !clinicTutorId.value) {
+      return false;
+    }
+
+    // Pet é obrigatório - verificar se está habilitado e tem valor
+    if (petId) {
+      if (petId.enabled) {
+        // Se está habilitado, deve ter valor
+        if (!petId.value) {
+          return false;
+        }
+      } else {
+        // Se está desabilitado, verificar se deveria estar habilitado
+        // Se há pets disponíveis, deveria estar habilitado
+        if (this.availablePets.length > 0) {
+          return false;
+        }
+        // Se não há pets mas há tutor selecionado, não pode criar agendamento
+        if (clinicTutorId.value && this.availablePets.length === 0) {
+          return false;
+        }
       }
-    ];
+    }
+
+    // Horário é obrigatório - verificar se está habilitado e tem valor
+    if (time) {
+      if (time.enabled) {
+        // Se está habilitado, deve ter valor
+        if (!time.value) {
+          return false;
+        }
+      } else {
+        // Se está desabilitado, verificar se deveria estar habilitado
+        // Se há slots disponíveis, deveria estar habilitado
+        if (this.availableSlots.length > 0 && date.value) {
+          return false;
+        }
+        // Se não há slots mas há data selecionada, não pode criar agendamento
+        if (date.value && this.availableSlots.length === 0 && !this.loadingSlots) {
+          return false;
+        }
+      }
+    }
+
+    // Serviço é obrigatório - verificar se está habilitado e tem valor
+    if (serviceId) {
+      if (serviceId.enabled) {
+        // Se está habilitado, deve ter valor
+        if (!serviceId.value) {
+          return false;
+        }
+      } else {
+        // Se está desabilitado, verificar se deveria estar habilitado
+        // Se há serviços disponíveis, deveria estar habilitado
+        if (this.availableServices.length > 0) {
+          return false;
+        }
+        // Se não há serviços mas há agenda selecionada, não pode criar agendamento
+        const scheduleId = this.appointmentForm.get('scheduleId')?.value;
+        if (scheduleId && this.availableServices.length === 0) {
+          return false;
+        }
+      }
+    }
+
+    // Se chegou aqui, todos os campos obrigatórios estão válidos
+    return true;
   }
 
   onSubmit(): void {
@@ -595,13 +823,15 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
     this.submitting = true;
     const formValue = this.appointmentForm.value;
 
+    // Combinar date (YYYY-MM-DD) e time (HH:mm) em formato ISO 8601
+    const dateTimeISO = this.combineDateAndTime(formValue.date, formValue.time);
+
     const appointmentData: CreateAppointmentRequest | UpdateAppointmentRequest = {
-      date: formValue.date,
-      time: formValue.time,
+      date: dateTimeISO,
       petId: formValue.petId,
       clinicTutorId: formValue.clinicTutorId,
       serviceId: formValue.serviceId,
-      scheduleId: formValue.scheduleId,
+      scheduleId: formValue.scheduleId || null,
       vetId: formValue.vetId || null,
       notes: formValue.notes || null
     };
@@ -615,6 +845,67 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
     } else {
       this.createAppointment(appointmentData as CreateAppointmentRequest);
     }
+  }
+
+  /**
+   * Validador customizado para verificar se a data não é no passado
+   * Quando há horário selecionado, valida a data e hora combinadas
+   */
+  private dateNotInPastValidator(control: any): { [key: string]: any } | null {
+    if (!control.value) {
+      return null; // Validação de required é feita separadamente
+    }
+
+    const date = control.value; // YYYY-MM-DD
+    const timeControl = this.appointmentForm?.get('time');
+    const time = timeControl?.value; // HH:mm
+
+    // Se não há horário, validar apenas a data (não pode ser antes de hoje)
+    if (!time) {
+      const selectedDate = new Date(date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate < today) {
+        return { dateInPast: true };
+      }
+      return null;
+    }
+
+    // Se há horário, validar data e hora combinadas
+    const [year, month, day] = date.split('-').map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
+    const selectedDateTime = new Date(year, month - 1, day, hours, minutes, 0, 0);
+    const now = new Date();
+
+    if (selectedDateTime < now) {
+      return { dateInPast: true };
+    }
+
+    return null;
+  }
+
+  /**
+   * Combina data (YYYY-MM-DD) e horário (HH:mm) em formato ISO 8601
+   * @param date Data no formato YYYY-MM-DD
+   * @param time Horário no formato HH:mm
+   * @returns Data e horário combinados em formato ISO 8601 (UTC)
+   */
+  private combineDateAndTime(date: string, time: string): string {
+    if (!date || !time) {
+      throw new Error('Data e horário são obrigatórios');
+    }
+
+    // Criar objeto Date com a data e hora local
+    const [year, month, day] = date.split('-').map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
+    
+    // Criar data no timezone local
+    const localDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+    
+    // Converter para ISO 8601 (UTC)
+    return localDate.toISOString();
   }
 
   private createAppointment(appointmentData: CreateAppointmentRequest): void {
@@ -720,6 +1011,26 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
 
   get serviceOptions() {
     return this.availableServices.map(s => ({ value: s.id, label: s.name }));
+  }
+
+  /**
+   * Retorna mensagem de erro para o campo de data
+   */
+  getDateErrorMessage(): string {
+    const control = this.dateControl;
+    if (!control || !control.touched) {
+      return '';
+    }
+
+    if (control.hasError('required')) {
+      return 'Data é obrigatória';
+    }
+
+    if (control.hasError('dateInPast')) {
+      return 'Não é possível agendar para datas passadas';
+    }
+
+    return '';
   }
 }
 

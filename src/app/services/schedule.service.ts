@@ -39,7 +39,7 @@ export interface TimelineAppointment {
     id: string;
     name: string;
     email: string;
-  };
+  } | null;
   schedule: {
     id: string;
     name: string;

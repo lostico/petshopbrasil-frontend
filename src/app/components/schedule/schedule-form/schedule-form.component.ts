@@ -22,15 +22,9 @@ const DAYS_OF_WEEK = [
 ];
 
 const SCHEDULE_CATEGORIES = [
-  { value: 'CONSULTA', label: 'Consulta' },
-  { value: 'CIRURGIA', label: 'Cirurgia' },
-  { value: 'VACINACAO', label: 'Vacinação' },
-  { value: 'EXAME', label: 'Exame' },
-  { value: 'BANHO', label: 'Banho' },
-  { value: 'TOSA', label: 'Tosa' },
+  { value: 'VETERINARIA', label: 'Veterinária' },
   { value: 'BANHO_E_TOSA', label: 'Banho e Tosa' },
-  { value: 'HOTEL', label: 'Hotel' },
-  { value: 'HOSPEDAGEM', label: 'Hospedagem' }
+  { value: 'HOTEL', label: 'Hotel' }
 ];
 
 const SCHEDULE_TYPES = [

@@ -48,23 +48,21 @@ export interface Appointment {
 }
 
 export interface CreateAppointmentRequest {
-  date: string; // YYYY-MM-DD
-  time: string; // HH:mm
+  date: string; // ISO 8601 format: "2024-01-15T10:00:00.000Z"
   petId: string;
   clinicTutorId: string;
   serviceId: string;
-  scheduleId: string;
+  scheduleId?: string | null; // Opcional conforme documentação da API
   vetId?: string | null;
   notes?: string | null;
 }
 
 export interface UpdateAppointmentRequest {
-  date?: string; // YYYY-MM-DD
-  time?: string; // HH:mm
+  date?: string; // ISO 8601 format: "2024-01-15T10:00:00.000Z"
   petId?: string;
   clinicTutorId?: string;
   serviceId?: string;
-  scheduleId?: string;
+  scheduleId?: string | null;
   vetId?: string | null;
   status?: 'SCHEDULED' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'NO_SHOW' | 'CANCELLED';
   notes?: string | null;

@@ -122,15 +122,9 @@ export class ScheduleComponent implements OnInit {
   private mapScheduleToAgenda(schedule: Schedule): Agenda {
     // Mapear categoria da API para o formato esperado
     const categoryMap: Record<string, 'veterinary' | 'grooming' | 'hotel'> = {
-      'CONSULTA': 'veterinary',
-      'CIRURGIA': 'veterinary',
-      'VACINACAO': 'veterinary',
-      'EXAME': 'veterinary',
-      'BANHO': 'grooming',
-      'TOSA': 'grooming',
+      'VETERINARIA': 'veterinary',
       'BANHO_E_TOSA': 'grooming',
-      'HOTEL': 'hotel',
-      'HOSPEDAGEM': 'hotel'
+      'HOTEL': 'hotel'
     };
 
     const category = categoryMap[schedule.category] || 'veterinary';
@@ -254,13 +248,13 @@ export class ScheduleComponent implements OnInit {
 
         appointments.push({
           id: appointment.id,
-          time: slot.time,
+          time: slot.time, // Usar o horário do slot, não do appointment
           tutorName: appointment.clinicTutor.name,
           petName: appointment.pet.name,
           service: appointment.service.name,
           status,
           category,
-          professional: appointment.vet.name,
+          professional: appointment.vet?.name || undefined, // Tratar caso vet seja null
           resourceId: agendaId,
           date: appointmentDate,
           duration: appointment.service.duration
