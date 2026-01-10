@@ -162,7 +162,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
   private initForm(): void {
     this.appointmentForm = this.fb.group({
       scheduleId: [''], // Opcional conforme documentação da API
-      date: ['', [Validators.required, this.dateNotInPastValidator.bind(this)]],
+      date: ['', [Validators.required]],
       time: [{ value: '', disabled: true }, [Validators.required]], // Desabilitado inicialmente
       petId: [{ value: '', disabled: true }, [Validators.required]], // Desabilitado inicialmente
       clinicTutorId: ['', [Validators.required]],
@@ -738,9 +738,8 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
     if (!date || !date.value) {
       return false;
     }
-    // Verificar se há erro de validação (exceto se não foi tocado ainda)
-    if (date.invalid && date.errors && !date.errors['dateInPast']) {
-      // Se tem erro que não é dateInPast, não é válido
+    // Verificar se há erro de validação
+    if (date.invalid && date.errors) {
       return false;
     }
 
@@ -847,44 +846,6 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  /**
-   * Validador customizado para verificar se a data não é no passado
-   * Quando há horário selecionado, valida a data e hora combinadas
-   */
-  private dateNotInPastValidator(control: any): { [key: string]: any } | null {
-    if (!control.value) {
-      return null; // Validação de required é feita separadamente
-    }
-
-    const date = control.value; // YYYY-MM-DD
-    const timeControl = this.appointmentForm?.get('time');
-    const time = timeControl?.value; // HH:mm
-
-    // Se não há horário, validar apenas a data (não pode ser antes de hoje)
-    if (!time) {
-      const selectedDate = new Date(date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      selectedDate.setHours(0, 0, 0, 0);
-
-      if (selectedDate < today) {
-        return { dateInPast: true };
-      }
-      return null;
-    }
-
-    // Se há horário, validar data e hora combinadas
-    const [year, month, day] = date.split('-').map(Number);
-    const [hours, minutes] = time.split(':').map(Number);
-    const selectedDateTime = new Date(year, month - 1, day, hours, minutes, 0, 0);
-    const now = new Date();
-
-    if (selectedDateTime < now) {
-      return { dateInPast: true };
-    }
-
-    return null;
-  }
 
   /**
    * Combina data (YYYY-MM-DD) e horário (HH:mm) em formato ISO 8601
@@ -1024,10 +985,6 @@ export class AppointmentFormComponent implements OnInit, OnDestroy, OnChanges {
 
     if (control.hasError('required')) {
       return 'Data é obrigatória';
-    }
-
-    if (control.hasError('dateInPast')) {
-      return 'Não é possível agendar para datas passadas';
     }
 
     return '';
